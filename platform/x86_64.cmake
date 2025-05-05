@@ -1,0 +1,24 @@
+set(CMAKE_SYSTEM_NAME Linux)
+
+set(COMPILER_PREFIX x86_64-linux-gnu)
+# set(CMAKE_C_COMPILER ${COMPILE_PREFIX}-gcc)
+# set(CMAKE_CXX_COMPILER ${COMPILE_PREFIX}-g++)
+# 设置编译器路径（使用find_program确保能找到编译器）
+find_program(CMAKE_C_COMPILER ${COMPILER_PREFIX}-gcc)
+find_program(CMAKE_CXX_COMPILER ${COMPILER_PREFIX}-g++)
+if(NOT CMAKE_C_COMPILER)
+    message(FATAL_ERROR "Could not find C compiler: ${COMPILER_PREFIX}-gcc")
+else()
+    message(DEBUG "${CMAKE_C_COMPILER}")
+endif()
+
+if(NOT CMAKE_CXX_COMPILER)
+    message(FATAL_ERROR "Could not find C++ compiler: ${COMPILER_PREFIX}-g++")
+else()
+    message(DEBUG "${CMAKE_CXX_COMPILER}")
+endif()
+
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
