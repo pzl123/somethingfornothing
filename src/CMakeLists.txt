@@ -22,7 +22,8 @@ target_include_directories(${EXECUTABLE_NAME} PRIVATE
 
 set(LIB_PATH ${PROJECT_SOURCE_DIR}/lib)
 target_link_libraries(${EXECUTABLE_NAME}
-    pthread
-    dl
-    ${LIB_PATH}/libsqlite3.a
+    PRIVATE
+        ${LIB_PATH}/libsqlite3.a
+        pthread
+        dl
 )
