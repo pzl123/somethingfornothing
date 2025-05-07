@@ -10,12 +10,6 @@ extern "C" {
 
 #include <stdbool.h>
 
-typedef struct
-{
-    int aaa;
-}dal_t;
-
-
 /**
  * @brief create a db and some server
  *
