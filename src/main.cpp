@@ -1,36 +1,32 @@
 #include <iostream>
-#include "uthash/uthash.h"
+
 #include "database/sqlite3_base.h"
-#include "uthash/utarray.h"
-#include "database/cache/lru.h"
+#include "utils/cache/lru.h"
 #include "database/dal.h"
+#include "utils/utils.h"
+
 
 
 int main(void)
 {
-    dal_t dal;
-    init_dal(&dal);
-    hash_add_or_update(&dal.dao.pcu_relay_cnt_dao, &dal.dao.relay_ut_icd, "A", 100);
-    hash_add_or_update(&dal.dao.pcu_relay_cnt_dao, &dal.dao.relay_ut_icd, "B", 200);
-    hash_add_or_update(&dal.dao.pcu_relay_cnt_dao, &dal.dao.relay_ut_icd, "C", 300);
+    lru_cache_t cache = {0};
+    new_lru_cache(&cache, 10, 10 * 1000);
 
-    hash_print_all(&dal.dao.pcu_relay_cnt_dao);
+    lru_cache_put_int64(&cache, "key1", 64);
 
-    hash_add_or_update(&dal.dao.pcu_relay_cnt_dao, &dal.dao.relay_ut_icd, "A", 999);
-    hash_print_all(&dal.dao.pcu_relay_cnt_dao);
+    lru_cache_put_str(&cache, "key2", "hello lru");
 
+    struct tmpa
+    {
+        int32_t aa;
+        char name[24];
+    };
+    struct tmpa ss = {32, "aaa"};
 
-    hash_find(&dal.dao.pcu_relay_cnt_dao, "B");
-    hash_find(&dal.dao.pcu_relay_cnt_dao, "X");
+    lru_cache_put_struct(&cache, "key3", sizeof(ss), (void *)&ss);
 
+    lru_cache_remove(&cache, "key1");
 
-    hash_delete(&dal.dao.pcu_relay_cnt_dao, &dal.dao.relay_ut_icd, "B");
-    hash_print_all(&dal.dao.pcu_relay_cnt_dao);
-
-
-    hash_clear_all(&dal.dao.pcu_relay_cnt_dao, &dal.dao.relay_ut_icd);
-    hash_print_all(&dal.dao.pcu_relay_cnt_dao);
-
-    new_dataserver();
+    delete_lru_cache(&cache);
     return 0;
 }
