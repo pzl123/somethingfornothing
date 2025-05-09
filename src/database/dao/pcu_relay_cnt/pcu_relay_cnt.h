@@ -1,4 +1,8 @@
-#pragma once
+#ifndef __PCURELAY_CNT_H__
+#define __PCURELAY_CNT_H__
+
+
+
 
 #include "uthash/uthash.h"
 #include "uthash/utarray.h"
@@ -9,13 +13,14 @@ extern "C" {
 
 typedef struct
 {
-    char *key;
-    int32_t cnt_value;
-    UT_hash_handle hh;
-} relay_dao_t;
+    int32_t aaa;
+    // retention_policy_t rp;
+    // prepared_stmt_t *ps;
+} pcu_relay_cnt_dao_t;
 
-void init_relay_dao(relay_dao_t **hash_head);
+void init_relay_dao(pcu_relay_cnt_dao_t **hash_head);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+#endif /* __PCURELAY_CNT_H__ */

@@ -1,4 +1,8 @@
-#pragma once
+#ifndef __DSN_H__
+#define __DSN_H__
+
+
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,3 +23,4 @@ const char* dsn_to_string(db_dsn_e dsn);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+#endif /* __DSN_H__ */

@@ -6,7 +6,7 @@
 #include <string.h>
 #include <time.h>
 
-void errif_debug(int line, const char *file, const char *fmt, ...)
+void errif_debug(int line, const char *file, pthread_t pid, const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -21,7 +21,7 @@ void errif_debug(int line, const char *file, const char *fmt, ...)
     if (filename == NULL) filename = file;
     else filename += 1;
 
-    fprintf(stderr, "\x1b[34m[DEBUG]\x1b[0m [%s %s:%d]: ", time_str, filename, line);
+    fprintf(stderr, "\x1b[34m[DEBUG]\x1b[0m [%s %lx %s:%d]: ", time_str, pid, filename, line);
 
     vfprintf(stderr, fmt, args);
     fprintf(stderr, "\n");

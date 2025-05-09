@@ -1,4 +1,9 @@
-#pragma once
+#ifndef __DAO_H__
+#define __DAO_H__
+
+
+
+
 
 #include "database/dao/pcu_relay_cnt/pcu_relay_cnt.h"
 
@@ -8,8 +13,7 @@ extern "C" {
 
 typedef struct
 {
-    UT_icd relay_ut_icd;
-    relay_dao_t *pcu_relay_cnt_dao;
+    pcu_relay_cnt_dao_t *pcu_relay_cnt_dao;
 } dao_t;
 
 void init_dao(dao_t *dao);
@@ -17,3 +21,5 @@ void init_dao(dao_t *dao);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
+#endif /* __DAO_H__ */

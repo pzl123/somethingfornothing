@@ -1,16 +1,20 @@
-#pragma once
+#ifndef __TEMPLATE_H__
+#define __TEMPLATE_H__
+
+#include "utils/utils.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
-
+#endif
 
 #define DAO_RETURN_IS_OK(func)                      \
 if (SQLITE_OK != func)                              \
 {                                                   \
-    printf("sql_err=%s", sqlite3_errmsg(db));  \
+    d_log("sql_err=%s", sqlite3_errmsg(db));  \
 }
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif
+
+#endif /* __TEMPLATE_H__ */

@@ -7,7 +7,7 @@
 
 
 
-void init_relay_dao(relay_dao_t **hash_head)
+void init_relay_dao(pcu_relay_cnt_dao_t **hash_head)
 {
     *hash_head = NULL;
 }
