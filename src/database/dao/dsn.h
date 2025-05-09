@@ -13,8 +13,6 @@ extern "C" {
 typedef enum
 {
     DSN_MAIN = 0,
-    DSN_TRANSACTION,
-    DSN_LC_INFO,
     DSN_END,
 }db_dsn_e;
 

@@ -4,7 +4,6 @@
 #include <stdbool.h>
 
 #include "uthash/utarray.h"
-#include "database/dao/pcu_relay_cnt/pcu_relay_cnt.h"
 
 #ifdef __cplusplus
 extern "C" {
