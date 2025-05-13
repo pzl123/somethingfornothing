@@ -1,5 +1,7 @@
 #include "sqlite_master_dao.h"
 #include "database/dao/template.h"
+#include <stdint.h>
+
 enum {
     COUNT_BY_NAME = 0,
 };

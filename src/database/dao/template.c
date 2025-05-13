@@ -75,6 +75,37 @@ static int32_t dao_template_base(prepared_stmt_t *ps, const char *sql, stmt_bind
     return change;
 }
 
+int32_t dao_template_select(prepared_stmt_t *ps, const char *sql, stmt_bind_cb cb, void *userp)
+{
+    if ((NULL == ps)
+    || (NULL == sql)
+    || (NULL == userp))
+    {
+        d_log("api misuse");
+        return -1;
+    }
+    sqlite3_stmt *pstmt = prepared_stmt_get(ps, sql);
+    if (NULL == pstmt)
+    {
+        d_log("sql=%s", sql);
+        return -1;
+    }
+
+    sqlite3 *db = sqlite3_db_handle(pstmt);
+    if (NULL != cb)
+    {
+        cb(db, pstmt, userp);
+    }
+
+    int32_t line = 0;
+    while (SQLITE_ROW == sqlite3_step(pstmt))
+    {
+        line++;
+    }
+    prepared_stmt_put(ps, pstmt);
+    return line;
+}
+
 int32_t dao_template_create(prepared_stmt_t *ps, const char *sql, stmt_bind_cb cb, void *userp)
 {
     return dao_template_base(ps, sql, cb, userp);

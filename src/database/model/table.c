@@ -8,8 +8,7 @@ static const table_t table_pcu_relay_cnt =
     .dsn = DSN_MAIN,
     .create_table_stmt =
         "CREATE TABLE IF NOT EXISTS pcu_relay_cnt ("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "relay_id INTEGER,"
+        "relay_id INTEGER PRIMARY KEY,"
         "close_cnt INTEGER"
         ");",
 };

@@ -4,6 +4,7 @@
 #include "utils/cache/lru.h"
 #include "database/dao/template.h"
 
+#include <stdint.h>
 
 #define MAX_MEM     (20 * 1000)
 #define MAX_KEY_NUM (100)

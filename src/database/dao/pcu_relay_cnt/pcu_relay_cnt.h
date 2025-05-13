@@ -47,6 +47,9 @@ int32_t pcu_relay_cnt_dao_get_by_relay_id(pcu_relay_cnt_dao_t *dao, pcu_do_branc
  */
 int32_t pcu_relay_cnt_dao_update_by_relay_id(pcu_relay_cnt_dao_t *dao, pcu_do_branch_relay_e relay_id, const pcu_relay_cnt_t *p);
 
+
+int32_t pcu_relay_cnt_dao_delete_by_relay_id(pcu_relay_cnt_dao_t *dao, pcu_do_branch_relay_e relay_id);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

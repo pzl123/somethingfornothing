@@ -28,6 +28,8 @@ typedef void (*stmt_batch_bind_cb)(sqlite3*, sqlite3_stmt*, int32_t, void*);
 
 typedef void (*stmt_unmarshal_cb)(sqlite3_stmt*, void*);
 
+int32_t dao_template_select(prepared_stmt_t *ps, const char *sql, stmt_bind_cb cb, void *userp);
+
 /**
  * @brief 插入操作的模板函数
  * @param ps prepared_stmt_t对象
