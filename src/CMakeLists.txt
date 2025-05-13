@@ -24,6 +24,7 @@ set(LIB_PATH ${PROJECT_SOURCE_DIR}/lib)
 target_link_libraries(${EXECUTABLE_NAME}
     PRIVATE
         ${LIB_PATH}/libsqlite3.a
+        ${LIB_PATH}/libhv_static.a
         pthread
         dl
 )
