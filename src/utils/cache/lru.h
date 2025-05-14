@@ -1,9 +1,9 @@
-#pragma once
+#ifndef __FILENAME_H__
+#define __FILENAME_H__
 
 #include <stdbool.h>
 
 #include "uthash/utarray.h"
-#include "database/dao/pcu_relay_cnt/pcu_relay_cnt.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -98,6 +98,8 @@ void lru_cache_remove(lru_cache_t *cache, const char *key);
  */
 cache_item_t* lru_cache_get(lru_cache_t *cache, const char *key);
 
+bool lru_cache_put(lru_cache_t *cache, const char *key, const UT_icd *icd, const void *data);
+
 /**
  * @brief 向缓存中插入一个 int64_t 类型的值
  *
@@ -141,3 +143,4 @@ bool lru_cache_put_struct(lru_cache_t *cache, const char *key, int32_t sz, const
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+#endif // __FILENAME_H__

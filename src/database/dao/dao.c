@@ -4,37 +4,31 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-static void init_relay(relay_dao_t *p)
+bool new_dao(dao_t *dao, prepared_stmt_t *pstmts, hloop_t *loop, sqlite_master_dao_t *sqlite_master_dao_array)
 {
-    p->key = NULL;
-}
-
-static void copy_relay(relay_dao_t *dst, const relay_dao_t *src)
-{
-    dst->cnt_value = src->cnt_value;
-    if (src->key)
+    if ((NULL == dao)
+    || (NULL == pstmts)
+    || (NULL == loop))
     {
-        dst->key = strdup(src->key);
+        d_log("api misuse");
+        return false;
     }
-    else
+    (void)sqlite_master_dao_array;
+
+    (void)new_pcu_relay_cnt_dao(&dao->pcu_relay_cnt_dao, &pstmts[DSN_MAIN]);
+
+    return true;
+}
+
+void delete_dao(dao_t *dao)
+{
+    if (NULL == dao)
     {
-        dst->key = NULL;
+        d_log("api misuse");
+        return;
     }
-}
 
-static void dtor_relay(relay_dao_t *p)
-{
-    free(p->key);
-}
+    delete_pcu_relay_cnt_dao(&dao->pcu_relay_cnt_dao);
 
-void init_dao(dao_t *dao)
-{
-    init_relay_dao(&dao->pcu_relay_cnt_dao);
-    dao->relay_ut_icd = (UT_icd)
-    {
-        .sz = sizeof(relay_dao_t),
-        (init_f*)init_relay,
-        (ctor_f*)copy_relay,
-        (dtor_f*)dtor_relay
-    };
+    return;
 }

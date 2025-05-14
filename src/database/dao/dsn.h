@@ -1,4 +1,8 @@
-#pragma once
+#ifndef __DSN_H__
+#define __DSN_H__
+
+
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -9,8 +13,6 @@ extern "C" {
 typedef enum
 {
     DSN_MAIN = 0,
-    DSN_TRANSACTION,
-    DSN_LC_INFO,
     DSN_END,
 }db_dsn_e;
 
@@ -19,3 +21,4 @@ const char* dsn_to_string(db_dsn_e dsn);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+#endif /* __DSN_H__ */

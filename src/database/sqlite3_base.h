@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __SQLITE3_BASE_H__
+#define __SQLITE3_BASE_H__
 
 #include <stdio.h>
 #include <stdint.h>
@@ -20,3 +21,4 @@ bool new_dataserver(void);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+#endif /* __SQLITE3_BASE_H__ */

@@ -1,4 +1,9 @@
-#pragma once
+#ifndef __TABLE_H__
+#define __TABLE_H__
+
+
+
+
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -22,3 +27,4 @@ bool get_tables(const table_t **head, int32_t *len);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+#endif /* __TABLE_H__ */

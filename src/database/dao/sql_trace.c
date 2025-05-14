@@ -1,5 +1,6 @@
 #include "sql_trace.h"
 #include <stdio.h>
+#include "utils/utils.h"
 static int32_t trace_profile_cb(uint32_t mask, void *userp, void *p, void *elapse_ptr)
 {
     (void)mask;
@@ -7,7 +8,7 @@ static int32_t trace_profile_cb(uint32_t mask, void *userp, void *p, void *elaps
     const char *sql = sqlite3_sql(pstmt);
     const char *label = (const char*)userp;
     int32_t elapse = (*(int64_t*)elapse_ptr / 1000000);
-    printf("label=%s elapse=%d sql=%s", label, elapse, sql);
+    d_log("label=%s elapse=%d sql=%s", label, elapse, sql);
     return 0;
 }
 
@@ -23,10 +24,10 @@ static void global_error_cb(void *userp, int32_t code, const char *msg)
     switch (code)
     {
     case SQLITE_SCHEMA:
-        printf("code=%d sql_err=%s", code, msg);
+        d_log("code=%d sql_err=%s", code, msg);
         break;
     default:
-        printf("code=%d sql_err=%s", code, msg);
+        d_log("code=%d sql_err=%s", code, msg);
         break;
     }
     return;
