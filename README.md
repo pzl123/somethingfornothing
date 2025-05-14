@@ -16,4 +16,6 @@
 # Start lighttpd
 ```shell
     sudo ./lighttpd -f ../config/lighttpd.conf -m ../lib
+
+    ps aux | grep lighttpd | grep -v grep | awk '{print $2}' | xargs sudo kill -9
 ```
