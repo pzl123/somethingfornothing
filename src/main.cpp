@@ -7,6 +7,8 @@
 
 int main(void)
 {
+    log_init();
+
     dao_t *dao = dao_init();
 
     pcu_relay_cnt_t p0 = {1, DO_DC_INPUT1_POS, 20};
@@ -40,10 +42,11 @@ int main(void)
 
     while (0 == FCGX_Accept_r(&req))
     {
-        sleep(10);
+        sleep(1);
         FCGX_FPrintF(req.out, "Content-Type: text/plain\r\n\r\n");
         FCGX_FPrintF(req.out, "Hello FastCGI World!\n");
         FCGX_Finish_r(&req);
+        d_log("*************** one time  ***************");
     }
 
     return 0;

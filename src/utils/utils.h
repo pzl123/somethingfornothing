@@ -9,13 +9,14 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define LOG_PATH "/home/zlgmcu/project/learnC++/log/log"
 
 #define d_log(fmt, ...) \
     errif_debug(__LINE__, __FILE__, pthread_self(), fmt, ##__VA_ARGS__)
 
 void errif_debug(int line, const char *file, pthread_t pid, const char *fmt, ...);
 
-
+void log_init(void);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
