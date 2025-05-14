@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #include "database/dao/prepared_stmt.h"
+#include "database/dao/retention_policy.h"
 #include "database/model/pcu_relay_cnt_model.h"
 
 #ifdef __cplusplus
@@ -13,7 +14,7 @@ extern "C" {
 
 typedef struct
 {
-    // retention_policy_t rp;
+    retention_policy_t rp;
     prepared_stmt_t *ps;
 } pcu_relay_cnt_dao_t;
 

@@ -20,6 +20,7 @@ typedef enum
 
 typedef struct
 {
+    int32_t id;
     pcu_do_branch_relay_e relay_id;
     int32_t close_cnt;
 } pcu_relay_cnt_t;

@@ -3,6 +3,7 @@
 #include "uthash/uthash.h"
 #include "uthash/utlist.h"
 #include "utils/utils.h"
+#include "hv/hplatform.h"
 
 struct lru_list_t
 {

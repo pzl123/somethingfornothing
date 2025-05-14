@@ -4,11 +4,11 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-bool new_dao(dao_t *dao, prepared_stmt_t *pstmts,/*  hloop_t *loop, */ sqlite_master_dao_t *sqlite_master_dao_array)
+bool new_dao(dao_t *dao, prepared_stmt_t *pstmts, hloop_t *loop, sqlite_master_dao_t *sqlite_master_dao_array)
 {
     if ((NULL == dao)
     || (NULL == pstmts)
-    /* || (NULL == loop) */)
+    || (NULL == loop))
     {
         d_log("api misuse");
         return false;

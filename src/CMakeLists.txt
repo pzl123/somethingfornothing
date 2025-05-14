@@ -11,7 +11,7 @@ if(WARNING_ERROR)
         -Wall
         -Wextra
         -Wshadow
-        -pedantic
+        # -pedantic
     )
 endif()
 

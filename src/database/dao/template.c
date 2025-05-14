@@ -1,6 +1,7 @@
 #include "template.h"
 #include "uthash/utstring.h"
 #include "database/dao/dao_option.h"
+#include "hv/hplatform.h"
 
 int32_t dao_template_create_pk_backfill(prepared_stmt_t *ps, const char *sql, stmt_bind_cb cb, void *userp, int32_t *pk)
 {

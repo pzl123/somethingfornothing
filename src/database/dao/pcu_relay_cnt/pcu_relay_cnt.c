@@ -28,7 +28,7 @@ bool new_pcu_relay_cnt_dao(pcu_relay_cnt_dao_t *dao, prepared_stmt_t *ps)
     }
 
     dao->ps = ps;
-    // (void)new_retention_policy_always(&dao->rp);
+    (void)new_retention_policy_always(&dao->rp);
     return true;
 }
 

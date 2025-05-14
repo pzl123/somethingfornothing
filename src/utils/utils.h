@@ -10,10 +10,6 @@ extern "C" {
 #endif /* __cplusplus */
 
 
-/* 浮点数据类型重定义 */
-typedef float  float32_t;
-typedef double float64_t;
-
 #define d_log(fmt, ...) \
     errif_debug(__LINE__, __FILE__, pthread_self(), fmt, ##__VA_ARGS__)
 

@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
-
+#include <sys/prctl.h>
 
 static void init_pstmts(prepared_stmt_t *pstmts)
 {
@@ -54,6 +54,14 @@ static void init_database(sqlite_master_dao_t *dao_array)
     return;
 }
 
+static void* dao_hloop_thread(void *arg)
+{
+    (void)prctl(PR_SET_NAME, __FUNCTION__);
+    hloop_t *loop = (hloop_t *)arg;
+    (void)hloop_run(loop);
+    return NULL;
+}
+
 bool new_dal(dal_t *dal)
 {
     if (!dal)
@@ -67,7 +75,13 @@ bool new_dal(dal_t *dal)
     init_sqlite_master_dao_array(dal->sqlite_master_dao_array, dal->pstmts);
     init_database(dal->sqlite_master_dao_array);
 
-    (void)new_dao(&dal->dao, dal->pstmts, /* dal->loop, */ dal->sqlite_master_dao_array);
+    dal->loop = hloop_new(HLOOP_FLAG_AUTO_FREE);
+    (void)new_dao(&dal->dao, dal->pstmts, dal->loop, dal->sqlite_master_dao_array);
+    (void)new_dao_deleter(&dal->deleter, dal->loop, new_retention_policy_array(&dal->dao), DAO_DELETER_TIMEOUT_10MIN);
+
+    pthread_t tid;
+    (void)pthread_create(&tid, NULL, dao_hloop_thread, dal->loop);
+    (void)pthread_detach(tid);
     return true;
 }
 
@@ -79,8 +93,8 @@ void delete_dal(dal_t *dal)
         return;
     }
 
-    // (void)hloop_stop(dal->loop);
-    // delete_dao_deleter(&dal->deleter);
+    (void)hloop_stop(dal->loop);
+    delete_dao_deleter(&dal->deleter);
     delete_dao(&dal->dao);
 
     for (int32_t i = 0; i < DSN_END; i++)
