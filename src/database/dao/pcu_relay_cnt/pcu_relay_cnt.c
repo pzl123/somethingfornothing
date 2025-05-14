@@ -41,7 +41,7 @@ void delete_pcu_relay_cnt_dao(pcu_relay_cnt_dao_t *dao)
     }
 
     dao->ps = NULL;
-    // delete_retention_policy_always(&dao->rp);
+    delete_retention_policy_always(&dao->rp);
     return;
 }
 
