@@ -16,7 +16,7 @@ extern "C" {
 
 void errif_debug(int line, const char *file, pthread_t pid, const char *fmt, ...);
 
-
+void log_init(void);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -7,8 +7,7 @@
 
 int main(void)
 {
-    FILE *fp  = fopen(LOG_PATH, "a+");
-    fclose(fp);
+    log_init();
 
     dao_t *dao = dao_init();
 

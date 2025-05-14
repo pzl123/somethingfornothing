@@ -56,3 +56,9 @@ void errif_debug(int line, const char *file, pthread_t pid, const char *fmt, ...
 
     va_end(args);
 }
+
+void log_init(void)
+{
+    FILE *fp  = fopen(LOG_PATH, "a+");
+    fclose(fp);
+}
