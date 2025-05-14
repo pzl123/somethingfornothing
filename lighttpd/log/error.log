@@ -1,0 +1,50 @@
+2025-05-14 14:48:02: (../src/server.c.1939) server started (lighttpd/1.4.76)
+2025-05-14 15:29:14: (../src/server.c.1939) server started (lighttpd/1.4.76)
+2025-05-14 15:29:14: (../src/gw_backend.c.568) bind() unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/test/test.fastcgi.socket-0: No such file or directory
+2025-05-14 15:29:14: (../src/gw_backend.c.1712) [ERROR]: spawning gw failed.
+2025-05-14 15:29:14: (../src/server.c.1943) Configuration of plugins failed. Going down.
+2025-05-14 15:37:08: (../src/server.c.1939) server started (lighttpd/1.4.76)
+2025-05-14 15:37:29: (../src/gw_backend.c.945) gw - found a host  0
+2025-05-14 15:37:29: (../src/gw_backend.c.272) got proc: pid: 400278 socket: unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/test/test.fastcgi.socket-2 load: 1
+2025-05-14 15:37:29: (../src/gw_backend.c.352) released proc: pid: 400278 socket: unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/test/test.fastcgi.socket-2 load: 0
+2025-05-14 16:39:31: (../src/server.c.1939) server started (lighttpd/1.4.76)
+2025-05-14 16:39:31: (../src/gw_backend.c.1632) invalid "bin-path" => "/home/zlgmcu/project/learnC++/lighttpd../bin/debug/webserver" (check that file exists, is regular file, and is executable by lighttpd)
+2025-05-14 16:39:31: (../src/gw_backend.c.568) bind() unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0: No such file or directory
+2025-05-14 16:39:31: (../src/gw_backend.c.1712) [ERROR]: spawning gw failed.
+2025-05-14 16:39:31: (../src/server.c.1943) Configuration of plugins failed. Going down.
+2025-05-14 16:40:51: (../src/server.c.1939) server started (lighttpd/1.4.76)
+2025-05-14 16:40:51: (../src/gw_backend.c.568) bind() unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0: No such file or directory
+2025-05-14 16:40:51: (../src/gw_backend.c.1712) [ERROR]: spawning gw failed.
+2025-05-14 16:40:51: (../src/server.c.1943) Configuration of plugins failed. Going down.
+2025-05-14 16:42:25: (../src/server.c.1939) server started (lighttpd/1.4.76)
+2025-05-14 16:43:38: (../src/gw_backend.c.945) gw - found a host  0
+2025-05-14 16:43:38: (../src/gw_backend.c.272) got proc: pid: 402274 socket: unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0 load: 1
+2025-05-14 16:43:38: (../src/gw_backend.c.352) released proc: pid: 402274 socket: unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0 load: 0
+2025-05-14 16:43:48: (../src/gw_backend.c.945) gw - found a host  0
+2025-05-14 16:43:48: (../src/gw_backend.c.272) got proc: pid: 402274 socket: unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0 load: 1
+2025-05-14 16:43:48: (../src/gw_backend.c.352) released proc: pid: 402274 socket: unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0 load: 0
+2025-05-14 18:18:17: (../src/gw_backend.c.945) gw - found a host  0
+2025-05-14 18:18:17: (../src/gw_backend.c.272) got proc: pid: 402274 socket: unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0 load: 1
+2025-05-14 18:18:17: (../src/gw_backend.c.352) released proc: pid: 402274 socket: unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0 load: 0
+2025-05-14 18:18:17: (../src/gw_backend.c.945) gw - found a host  0
+2025-05-14 18:18:17: (../src/gw_backend.c.272) got proc: pid: 402274 socket: unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0 load: 1
+2025-05-14 18:18:17: (../src/gw_backend.c.352) released proc: pid: 402274 socket: unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0 load: 0
+2025-05-14 18:18:37: (../src/gw_backend.c.945) gw - found a host  0
+2025-05-14 18:18:37: (../src/gw_backend.c.272) got proc: pid: 402274 socket: unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0 load: 1
+2025-05-14 18:18:37: (../src/gw_backend.c.352) released proc: pid: 402274 socket: unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0 load: 0
+2025-05-14 18:22:02: (../src/gw_backend.c.383) child signalled: 9
+2025-05-14 18:22:02: (../src/gw_backend.c.509) new proc, socket: 0 /home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0
+2025-05-14 18:22:02: (../src/gw_backend.c.533) connect() /home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0: Connection refused
+2025-05-14 18:22:19: (../src/server.c.2350) server stopped by UID = 0 PID = 1
+2025-05-14 18:24:41: (../src/server.c.1939) server started (lighttpd/1.4.76)
+2025-05-14 18:25:36: (../src/gw_backend.c.945) gw - found a host  0
+2025-05-14 18:25:36: (../src/gw_backend.c.272) got proc: pid: 3098 socket: unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0 load: 1
+2025-05-14 18:25:46: (../src/gw_backend.c.352) released proc: pid: 3098 socket: unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0 load: 0
+2025-05-14 18:35:54: (../src/server.c.1939) server started (lighttpd/1.4.76)
+2025-05-14 18:35:54: (../src/gw_backend.c.533) connect() /home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0: Connection refused
+2025-05-14 18:36:00: (../src/gw_backend.c.945) gw - found a host  0
+2025-05-14 18:36:00: (../src/gw_backend.c.272) got proc: pid: 6447 socket: unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0 load: 1
+2025-05-14 18:36:10: (../src/gw_backend.c.352) released proc: pid: 6447 socket: unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0 load: 0
+2025-05-14 18:36:16: (../src/gw_backend.c.945) gw - found a host  0
+2025-05-14 18:36:16: (../src/gw_backend.c.272) got proc: pid: 6447 socket: unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0 load: 1
+2025-05-14 18:36:26: (../src/gw_backend.c.352) released proc: pid: 6447 socket: unix:/home/zlgmcu/project/learnC++/lighttpd/sockets/webserver/webserver.fastcgi.socket-0 load: 0

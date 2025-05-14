@@ -3,6 +3,7 @@
 #include "utils/cache/lru.h"
 #include "database/init.h"
 #include "database/dao/pcu_relay_cnt/pcu_relay_cnt.h"
+#include "fcgi/fcgi_stdio.h"
 
 int main(void)
 {
@@ -31,6 +32,19 @@ int main(void)
     pcu_relay_cnt_t p = {7, DO_DC_INPUT1_NEG, 200};
     pcu_relay_cnt_dao_update_by_relay_id(&dao->pcu_relay_cnt_dao, DO_DC_INPUT1_NEG, &p);
     dao_clear();
+
+    FCGX_Init();
+    FCGX_Request req;
+    memset(&req, 0, sizeof(req));
+    FCGX_InitRequest(&req, 0, 0);
+
+    while (0 == FCGX_Accept_r(&req))
+    {
+        sleep(10);
+        FCGX_FPrintF(req.out, "Content-Type: text/plain\r\n\r\n");
+        FCGX_FPrintF(req.out, "Hello FastCGI World!\n");
+        FCGX_Finish_r(&req);
+    }
 
     return 0;
 }
