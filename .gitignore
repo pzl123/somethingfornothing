@@ -1,4 +1,5 @@
-.vscode
-build
-lighttpd-1.4.76
-pcre2
+.vscode/
+build/
+lighttpd/
+db/
+bin/
