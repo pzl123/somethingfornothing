@@ -7,6 +7,14 @@
 #include <time.h>
 #include <sys/time.h>
 
+static void write_frm_td(char* str)
+{
+    FILE *fp;
+    fp = fopen(LOG_PATH,"a+");
+    fwrite(str, 1, strlen(str), fp);
+    fclose(fp);
+}
+
 void get_time_with_ms(char *time_str, size_t len)
 {
     struct timeval tv;
@@ -34,10 +42,17 @@ void errif_debug(int line, const char *file, pthread_t pid, const char *fmt, ...
     if (filename == NULL) filename = file;
     else filename += 1;
 
-    fprintf(stderr, "\x1b[34m[DEBUG]\x1b[0m [%s %lx %s:%d]: ", time_str, pid, filename, line);
+    // 构建日志内容
+    char log_buffer[2048];
+#ifdef LOG_STDOUT
+    snprintf(log_buffer, sizeof(log_buffer), "\x1b[34m[DEBUG]\x1b[0m [%s %lx %s:%d]: ", time_str, pid, filename, line);
+#else
+    snprintf(log_buffer, sizeof(log_buffer), "[DEBUG] [%s %lx %s:%d]: ", time_str, pid, filename, line);
+#endif
+    vsnprintf(log_buffer + strlen(log_buffer), sizeof(log_buffer) - strlen(log_buffer), fmt, args);
+    strcat(log_buffer, "\n");
+    write_frm_td(log_buffer);
 
-    vfprintf(stderr, fmt, args);
-    fprintf(stderr, "\n");
 
     va_end(args);
 }
