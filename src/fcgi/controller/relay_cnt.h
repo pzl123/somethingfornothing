@@ -7,15 +7,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef struct {
-    int id;
-    const char *name;
-    const char *relay_id;
-    int action_cnt;
-} RelayData_t;
-
-void query_relay_cnt(RelayData_t *relay_data, FCGX_Request *req);
+void set_relay_cnt(FCGX_Request *req);
+void query_relay_cnt(FCGX_Request *req);
 #ifdef __cplusplus
 }
 #endif

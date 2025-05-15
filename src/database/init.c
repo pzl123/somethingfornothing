@@ -14,3 +14,8 @@ void dao_clear(void)
     delete_dal(&dal);
     return;
 }
+
+dao_t *get_dao_prt(void)
+{
+    return &dal.dao;
+}

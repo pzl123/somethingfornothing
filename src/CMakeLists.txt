@@ -26,6 +26,7 @@ target_link_libraries(${EXECUTABLE_NAME}
         ${LIB_PATH}/libsqlite3.a
         ${LIB_PATH}/libhv_static.a
         ${LIB_PATH}/libfcgi.a
+        ${LIB_PATH}/libcjsonx.a
         pthread
         dl
 )
