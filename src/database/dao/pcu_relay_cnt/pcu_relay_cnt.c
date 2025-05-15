@@ -72,17 +72,17 @@ int32_t pcu_relay_cnt_dao_create(pcu_relay_cnt_dao_t *dao, const pcu_relay_cnt_t
     int32_t ret = dao_template_select(dao->ps, g_sql[SELECT], already_exit_in_table, (void*)p);
     if (ret < 0)
     {
-        d_log("dao_template_select failed for relay_id[%d], ret:%d", p->relay_id, ret);
+        w_log("dao_template_select failed for relay_id[%d], ret:%d", p->relay_id, ret);
         return ret;
     }
     else if (ret == 0)
     {
-        d_log("relay_id[%d] doesn't exit in pcu_relay_cnt table, create it", p->relay_id);
+        // d_log("relay_id[%d] doesn't exit in pcu_relay_cnt table, create it", p->relay_id);
         return dao_template_create(dao->ps, g_sql[CREATE], create_bind_cb, (void*)p);
     }
     else
     {
-        d_log("relay_id[%d] already exit in pcu_relay_cnt table,ret:%d", p->relay_id,ret);
+        // d_log("relay_id[%d] already exit in pcu_relay_cnt table,ret:%d", p->relay_id,ret);
         return 0;
     }
     // return dao_template_create(dao->ps, g_sql[CREATE], create_bind_cb, (void*)p);

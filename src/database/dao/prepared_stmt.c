@@ -75,7 +75,7 @@ static sqlite3_stmt* new_pstmt(sqlite3 *db, const char *sql)
         return NULL;
     }
 
-    d_log("func=%s sql=%s", __func__, sql);
+    // d_log("func=%s sql=%s", __func__, sql);
     return pstmt;
 }
 

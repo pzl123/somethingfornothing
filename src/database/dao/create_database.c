@@ -15,7 +15,7 @@ bool create_table(sqlite_master_dao_t *dao, const table_t *table)
 
     if (count > 0)
     {
-        d_log("label=create_db msg=%s exist", table->table_name);
+        // d_log("label=create_db msg=%s exist", table->table_name);
         return true;
     }
 
@@ -23,7 +23,7 @@ bool create_table(sqlite_master_dao_t *dao, const table_t *table)
     dao_begin(db, __func__);
     if (SQLITE_OK != sqlite3_exec(db, table->create_table_stmt, NULL, NULL, NULL))
     {
-        d_log("label=create_db sql_err=%s", sqlite3_errmsg(db));
+        e_log("label=create_db sql_err=%s", sqlite3_errmsg(db));
         dao_rollback(db, __func__);
         return false;
     }

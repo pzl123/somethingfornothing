@@ -3,4 +3,4 @@ build/
 db/
 log/
 db/
-bin/
+bin/*
