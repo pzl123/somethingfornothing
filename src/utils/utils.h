@@ -12,9 +12,12 @@ extern "C" {
 #define LOG_PATH "/home/zlgmcu/project/learnC++/log/log"
 
 #define d_log(fmt, ...) \
-    errif_debug(__LINE__, __FILE__, pthread_self(), fmt, ##__VA_ARGS__)
+    errif_debug("DEBUG", __LINE__, __FILE__, pthread_self(), fmt, ##__VA_ARGS__)
 
-void errif_debug(int line, const char *file, pthread_t pid, const char *fmt, ...);
+#define w_log(fmt, ...) \
+    errif_debug("WARN ", __LINE__, __FILE__, pthread_self(), fmt, ##__VA_ARGS__)
+
+void errif_debug(const char* type, int line, const char *file, pthread_t pid, const char *fmt, ...);
 
 void log_init(void);
 #ifdef __cplusplus

@@ -46,4 +46,11 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     endif()
 endif()
 
+if (LOG_STDOUT)
+    add_definitions("-DLOG_STDOUT")
+    message(STATUS "LOG_STDOUT: define")
+else()
+    message(STATUS "LOG_STDOUT: undefine")
+endif()
+
 add_subdirectory(src)

@@ -9,6 +9,7 @@ int main(void)
 {
     log_init();
 
+    w_log(" *******************88 test **************************");
     dao_t *dao = dao_init();
 
     pcu_relay_cnt_t p0 = {1, DO_DC_INPUT1_POS, 20};
@@ -35,19 +36,19 @@ int main(void)
     pcu_relay_cnt_dao_update_by_relay_id(&dao->pcu_relay_cnt_dao, DO_DC_INPUT1_NEG, &p);
     dao_clear();
 
-    FCGX_Init();
-    FCGX_Request req;
-    memset(&req, 0, sizeof(req));
-    FCGX_InitRequest(&req, 0, 0);
+    // FCGX_Init();
+    // FCGX_Request req;
+    // memset(&req, 0, sizeof(req));
+    // FCGX_InitRequest(&req, 0, 0);
 
-    while (0 == FCGX_Accept_r(&req))
-    {
-        sleep(1);
-        FCGX_FPrintF(req.out, "Content-Type: text/plain\r\n\r\n");
-        FCGX_FPrintF(req.out, "Hello FastCGI World!\n");
-        FCGX_Finish_r(&req);
-        d_log("*************** one time  ***************");
-    }
+    // while (0 == FCGX_Accept_r(&req))
+    // {
+    //     sleep(1);
+    //     FCGX_FPrintF(req.out, "Content-Type: text/plain\r\n\r\n");
+    //     FCGX_FPrintF(req.out, "Hello FastCGI World!\n");
+    //     FCGX_Finish_r(&req);
+    //     d_log("*************** one time  ***************");
+    // }
 
     return 0;
 }
