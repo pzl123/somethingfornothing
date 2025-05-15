@@ -10,7 +10,7 @@ extern "C" {
 dao_t* dao_init(void);
 
 void dao_clear(void);
-
+dao_t *get_dao_prt(void);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

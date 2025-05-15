@@ -1,6 +1,8 @@
 #ifndef __API_CODE_H__
 #define __API_CODE_H__
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -69,7 +71,7 @@ typedef enum
 typedef struct FCGX_Request FCGX_Request;
 extern void api_print(FCGX_Request *req, api_code_e code, const char* data);
 
-
+api_code_e api_code_from_cjsonx(int32_t err);
 #ifdef __cplusplus
 }
 #endif

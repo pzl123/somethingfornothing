@@ -1,6 +1,7 @@
 #include "api_code.h"
 #include "fcgi/fcgiapp.h"
 #include "utils/utils.h"
+#include "cjsonx/cJSONx.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -96,4 +97,28 @@ void api_print(FCGX_Request *req, api_code_e code, const char* data)
         FCGX_FPrintF(req->out, "{ \"code\": %d, \"message\": \"%s\", \"data\": %s }\n", map[code].code, map[code].message, data);
     }
     return;
+}
+
+api_code_e api_code_from_cjsonx(int32_t err)
+{
+    switch (err)
+    {
+    case ERR_CJSONX_NONE:
+        return API_ERR_OK;
+    case ERR_CJSONX_MEMORY:
+        return API_ERR_INTERNAL;
+    case ERR_CJSONX_TYPE:
+        return API_ERR_JSON_TYPE;
+    case ERR_CJSONX_MISSING_FIELD:
+        return API_ERR_MISSING_FIELD;
+    case ERR_CJSONX_FORMAT:
+        return API_ERR_JSON;
+    case ERR_CJSONX_ARGS:
+        return API_ERR_ARGS;
+    case ERR_CJSONX_OVERFLOW:
+        return API_ERR_FIELD_OVERFLOW;
+    default:
+        break;
+    }
+    return API_ERR_INTERNAL;
 }

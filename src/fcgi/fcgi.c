@@ -16,13 +16,14 @@ enum {
 typedef struct
 {
     const char *path;
-    void (*func)(RelayData_t *data, FCGX_Request *req);
+    void (*func)(FCGX_Request *req);
 } api_router_t;
 
 static const api_router_t get_router[] = {
 {"/relay_cnt", query_relay_cnt}
 };
 static const api_router_t post_router[] = {
+{"/relay_cnt", set_relay_cnt}
 };
 typedef struct
 {
@@ -78,15 +79,6 @@ static const api_router_t* find_router(int32_t mehtod, const char *path_info)
 }
 
 
-RelayData_t relay_data[] = {
-    {1, "DO_DC_INPUT1_POS", "R1", 5},
-    {2, "DO_DC_INPUT1_NEG", "R2", 3},
-    {3, "DO_DC_INPUT1_PRE", "R3", 7},
-    {4, "DO_DC_INPUT2_POS", "R4", 2},
-    {5, "DO_DC_INPUT2_NEG", "R5", 4},
-    {6, "DO_DC_INPUT2_PRE", "R6", 6}
-};
-
 void fcgi_main(dao_t *dao)
 {
     (void)dao;
@@ -117,7 +109,7 @@ void fcgi_main(dao_t *dao)
             api_print(&req, API_ERR_URI, NULL);
             continue;
         }
-        router->func(relay_data, &req);
+        router->func(&req);
     }
 }
 
