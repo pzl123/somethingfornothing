@@ -53,4 +53,12 @@ else()
     message(STATUS "LOG_STDOUT: undefine")
 endif()
 
+if(DEFINED LOG_LEVEL)
+    add_definitions(-DLOG_LEVEL=${LOG_LEVEL})
+    message(STATUS "LOG_LEVEL: ${LOG_LEVEL}")
+else()
+    add_definitions(-DLOG_LEVEL=4)
+    message(STATUS "LOG_LEVEL: not defined, using default level in code")
+endif()
+
 add_subdirectory(src)
