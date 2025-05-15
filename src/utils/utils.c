@@ -6,13 +6,19 @@
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
+#include <pthread.h>
+
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void write_frm_td(char* str)
 {
+    pthread_mutex_lock(&mutex);
     FILE *fp;
-    fp = fopen(LOG_PATH,"a+");
+    fp = fopen(LOG_PATH,"a");
     fwrite(str, 1, strlen(str), fp);
+    fflush(fp);
     fclose(fp);
+    pthread_mutex_unlock(&mutex);
 }
 
 void get_time_with_ms(char *time_str, size_t len)
