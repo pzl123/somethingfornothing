@@ -4,4 +4,3 @@ db/
 log/
 db/
 bin/*
-lighttpd/*

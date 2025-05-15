@@ -111,7 +111,7 @@ static void print_cache(lru_cache_t *cache)
     lru_list_t *elt = NULL;
     int32_t cnt = 0;
     DL_COUNT(cache->list, elt, cnt);
-    d_log("used=%ld byte:%0.3f%%  key_count=%d", cache->used_mem, (float32_t)((float32_t)cache->used_mem/(float32_t)cache->max_mem), cnt);
+    // d_log("used=%ld byte:%0.3f%%  key_count=%d", cache->used_mem, (float32_t)((float32_t)cache->used_mem/(float32_t)cache->max_mem), cnt);
 
     {
         lru_list_t *tmp = NULL;
@@ -120,7 +120,7 @@ static void print_cache(lru_cache_t *cache)
         DL_FOREACH_SAFE(cache->list, elt, tmp) {
             utstring_printf(s, "[%s]->", elt->hash_node->key);
         }
-        d_log("%s", utstring_body(s));
+        // d_log("%s", utstring_body(s));
         utstring_free(s);
     }
 

@@ -1,11 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<title>test</title>
+  <meta charset="UTF-8" />
+  <title>Relay Table Update</title>
 </head>
 <body>
-    <h1>我的第一个标题</h1>
-    <p>我的第一个段落。</p>
+  <h2>Send a GET Request to Refresh Table</h2>
+  <button onclick="refreshTable()">Refresh Data</button>
+
+  <h3>Relay Table:</h3>
+  <table border="1" id="relay-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>ID</th>
+        <th>Relay ID</th>
+        <th>Action Count</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- 动态填充 -->
+    </tbody>
+  </table>
+
+  <pre id="response"></pre>
+
+  <script>
+    function refreshTable() {
+      fetch('/webserver/relay_cnt') // 向 FastCGI 发起 GET 请求
+        .then(response => response.json())
+        .then(data => {
+          const tbody = document.querySelector("#relay-table tbody");
+          tbody.innerHTML = ""; // 清空旧数据
+
+          data.data.forEach(row => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${row.name}</td>
+              <td>${row.id}</td>
+              <td>${row.relay_id}</td>
+              <td>${row.action_cnt}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+
+          document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(err => {
+          document.getElementById('response').textContent = 'Error fetching data: ' + err;
+        });
+    }
+  </script>
 </body>
 </html>
