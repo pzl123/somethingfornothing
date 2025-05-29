@@ -4,12 +4,14 @@
 #include <unordered_map>
 #include <algorithm>
 #include <map>
+#include <queue>
 
 #include "utils/cache/lru.h"
 #include "database/init.h"
 #include "database/dao/pcu_relay_cnt/pcu_relay_cnt.h"
 #include "fcgi/fcgi.h"
 #include "relay/relay.h"
+#include "utils/priority_queue/priority_queue.h"
 
 #include "mode/singleton.h"
 #include "mode/composite.h"
@@ -161,6 +163,30 @@ int main(void)
     // fcgi_main(dao);
 
     // dao_clear();
+
+    pq_t *pq = pq_init(10, max_heap_compare);
+
+    key_value_t item1 = {._key = 30, ._value = NULL};
+    key_value_t item2 = {._key = 50, ._value = NULL};
+    key_value_t item3 = {._key = 20, ._value = NULL};
+    key_value_t item4 = {._key = 20, ._value = NULL};
+    key_value_t item5 = {._key = 10, ._value = NULL};
+    key_value_t item6 = {._key = 40, ._value = NULL};
+
+    priority_queue_push(pq, item1);
+    priority_queue_push(pq, item2);
+    priority_queue_push(pq, item3);
+    priority_queue_push(pq, item4);
+    priority_queue_push(pq, item5);
+    priority_queue_push(pq, item6);
+
+    // 此时堆顶应为 key=50 的 item2
+    while (!pq_empty(pq))
+    {
+        key_value_t top = pq_top(pq);
+        printf("Top key: %d\n", top._key);  // 输出 50
+        priority_queue_pop(pq);
+    }
 
     return 0;
 }
