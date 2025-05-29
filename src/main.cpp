@@ -165,8 +165,13 @@ int main(void)
     // dao_clear();
 
     pq_t *pq = pq_init(10, max_heap_compare);
-
-    key_value_t item1 = {._key = 30, ._value = NULL};
+    typedef struct
+    {
+        int32_t value;
+        char *s;
+    } tmp_t;
+    static tmp_t itme1_tmp = {.value = 1, .s = "itme1"};
+    key_value_t item1 = {._key = 30, ._value = (void *)&itme1_tmp};
     key_value_t item2 = {._key = 50, ._value = NULL};
     key_value_t item3 = {._key = 20, ._value = NULL};
     key_value_t item4 = {._key = 20, ._value = NULL};
@@ -184,7 +189,15 @@ int main(void)
     while (!pq_empty(pq))
     {
         key_value_t top = pq_top(pq);
-        printf("Top key: %d\n", top._key);  // 输出 50
+        if (top._value != NULL)
+        {
+            tmp_t *tmp = (tmp_t *)top._value;
+            d_log("Top key: %d value:%d, %s", top._key, tmp->value, tmp->s);
+        }
+        else
+        {
+            d_log("Top key: %d _value is NULL", top._key);
+        }
         priority_queue_pop(pq);
     }
 
