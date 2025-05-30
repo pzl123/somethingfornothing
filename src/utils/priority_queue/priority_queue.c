@@ -39,6 +39,16 @@ pq_t *pq_init(int32_t capacity, int32_t (*compare)(pv_t* A, pv_t *b))
     return pq;
 }
 
+bool pq_delete(pq_t *pq)
+{
+    if (!pq)
+    {
+        free(pq->elements);
+        return true;
+    }
+    return false;
+}
+
 static void swap_elements(pv_t* father, pv_t *chil)
 {
     pv_t tmp = *father;

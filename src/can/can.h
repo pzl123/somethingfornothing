@@ -24,7 +24,7 @@ typedef struct can_task_pool
 } can_task_pool_t;
 
 int32_t taskpool_init(can_task_pool_t *pool, int32_t queue_size, int32_t thread_num, const char *pth_name);
-
+void test(void);
 #ifdef __cplusplus
 }
 #endif

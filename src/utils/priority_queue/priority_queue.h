@@ -27,6 +27,7 @@ typedef struct
 } pq_t;
 
 pq_t *pq_init(int32_t capacity, int32_t (*compare)(pv_t* A, pv_t *b));
+bool pq_delete(pq_t *pq);
 int32_t max_heap_compare(pv_t *a, pv_t *b);
 int32_t min_heap_compare(pv_t *a, pv_t *b);
 bool priority_queue_push(pq_t *pq, pv_t item);
