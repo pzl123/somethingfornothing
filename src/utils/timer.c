@@ -193,7 +193,7 @@ static inline int32_t _timer_list_add(Timer_handle_t hdl)
 
 }
 
-void p_timer_loop_once(void)
+static void p_timer_loop_once(void)
 {
     if (NULL == g_timer_list_head)
     {
@@ -249,7 +249,7 @@ void p_timer_loop_once(void)
 
 }
 
-void p_timer_loop_get_next_min_timeout(struct timeval *tv)
+static void p_timer_loop_get_next_min_timeout(struct timeval *tv)
 {
     Timer_handle_t cur = g_timer_list_head;
     if (NULL != cur)
@@ -276,7 +276,7 @@ void p_timer_loop_get_next_min_timeout(struct timeval *tv)
     }
 }
 
-void *p_timer_mian_loop(void *quit_ctl)
+static void *p_timer_mian_loop(void *quit_ctl)
 {
     struct timeval tv;
     fd_set rfds;
@@ -298,7 +298,7 @@ void *p_timer_mian_loop(void *quit_ctl)
     return quit_ctl;
 }
 
-int32_t p_timer_start_loop_pthread(void *quit_ctl)
+static int32_t p_timer_start_loop_pthread(void *quit_ctl)
 {
     int32_t ret = pthread_create(&g_main_loop_thread_fd, NULL, &p_timer_mian_loop, quit_ctl);
     if (0 == ret)
@@ -308,15 +308,16 @@ int32_t p_timer_start_loop_pthread(void *quit_ctl)
     return ret;
 }
 
-int32_t p_timer_init(void)
+int32_t p_timer_init(void *quit_ctl)
 {
     pthread_mutex_init(&g_timer_list_mutex, NULL);
     g_timer_list_head = NULL;
     g_ctrl_fd = eventfd(0,0);
+    p_timer_start_loop_pthread(quit_ctl);
     return g_ctrl_fd;
 }
 
-Timer_handle_t p_timer_create(uint64_t timeout_ms, int32_t repeat, timeout_cb cb, void *userdata)
+Timer_handle_t p_timer_add(uint64_t timeout_ms, int32_t repeat, timeout_cb cb, void *userdata)
 {
     if ((timeout_ms <= 0) || (NULL == cb) || (NULL == userdata))
     {
@@ -340,6 +341,7 @@ Timer_handle_t p_timer_create(uint64_t timeout_ms, int32_t repeat, timeout_cb cb
     hdl->prev = NULL;
     hdl->next = NULL;
 
+    p_timer_start(hdl);
     return hdl;
 }
 

@@ -18,14 +18,11 @@ static void my_callback1(void *userdata)
 
 static void test_timer(void)
 {
-    p_timer_init();
-    char *data = strdup("Hello Timer");
-    Timer_handle_t t1 = p_timer_create(1000, 3, &my_callback, data);
-    p_timer_start(t1);
     int quit = 0;
-    p_timer_start_loop_pthread(&quit);
-    Timer_handle_t t2 = p_timer_create(1000, 3, &my_callback1, data);
-    p_timer_start(t2);
+    p_timer_init(&quit);
+    char *data = strdup("Hello Timer");
+    Timer_handle_t t1 = p_timer_add(1000, 3, &my_callback, data);
+    Timer_handle_t t2 = p_timer_add(1000, 3, &my_callback1, data);
     // // 主线程做其他工作
     while (1)
     {
@@ -33,4 +30,5 @@ static void test_timer(void)
     }
     quit = 1;
     p_timer_del(&t1);
+    p_timer_del(&t2);
 }

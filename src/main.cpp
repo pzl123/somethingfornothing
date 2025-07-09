@@ -13,6 +13,8 @@
 #include "relay/relay.h"
 #include "utils/priority_queue/priority_queue.h"
 #include "can/can.h"
+#include "peventloop/monotonic.h"
+#include "utils/timer.h"
 
 #include "mode/singleton.h"
 #include "mode/composite.h"
@@ -131,13 +133,60 @@ class Solution
             return true;
         }
 
+        int jump(vector<int>& nums) {
+            auto n = nums.size();
+            int jumps = 0, farthest = 0, current_end = 0;
+
+            for (auto i = 0; i < n - 1; i++)
+            {
+                farthest = max(farthest, i + nums[i]);
+                if (i == current_end)
+                {
+                    jumps++;
+                    d_log("jumps[%d], farthest[%d] n-1[%d]", jumps, farthest, n - 1);
+                    current_end = farthest;
+                    if (current_end >= n - 1)
+                    {
+                        break;
+                    }
+                }
+
+            }
+            return jumps;
+        }
 };
 
 
-int main(void)
+static void my_callback(void *userdata)
 {
-
-    test();
-    return 0;
+    d_log("Timer1 fired! Data: %s", (char*)userdata);
 }
 
+static void my_callback1(void *userdata)
+{
+    d_log("Timer2 fired! Data: %s", (char*)userdata);
+}
+
+
+static void test_timer(void)
+{
+    int quit = 0;
+    p_timer_init(&quit);
+    char *data = strdup("Hello Timer");
+    Timer_handle_t t1 = p_timer_add(1000, 3, &my_callback, data);
+    Timer_handle_t t2 = p_timer_add(1000, 3, &my_callback1, data);
+    // // 主线程做其他工作
+    while (1)
+    {
+        sleep(5);
+    }
+    quit = 1;
+    p_timer_del(&t1);
+    p_timer_del(&t2);
+}
+
+int main(void)
+{
+    test_timer();
+    return 0;
+}
