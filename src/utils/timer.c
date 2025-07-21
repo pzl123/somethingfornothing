@@ -33,7 +33,7 @@ struct timer_handle_struct
 
 
 static int32_t g_ctrl_fd = -1;
-static Timer_handle_t g_timer_list_head;
+static Timer_handle_t g_timer_list_head = NULL;
 static pthread_mutex_t g_timer_list_mutex;
 static pthread_t g_main_loop_thread_fd;
 
