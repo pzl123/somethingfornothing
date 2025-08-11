@@ -56,4 +56,4 @@ int main(int argc, char **argv)
     return 0;
 }
 
-/* gcc ccu_client.c -o ccu_client -I../../include -L../../lib -lhv_static -lpthread */
+/* gcc ccu_client.c -o ccu_client -I../include -L../lib -lhv_static -lpthread */
