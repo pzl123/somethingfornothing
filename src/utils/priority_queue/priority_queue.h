@@ -18,9 +18,9 @@ typedef struct
 
 typedef struct
 {
-    pv_t *elements;         // 存储元素的数组
-    int capacity;                  // 最大容量
-    int size;                      // 当前元素个数
+    pv_t *elements; // 存储元素的数组
+    int capacity;   // 最大容量
+    int size;       // 当前元素个数
     pthread_mutex_t mutex;
     pthread_cond_t cond;
     int32_t (*compare)(pv_t* A, pv_t *b);

@@ -39,8 +39,8 @@ typedef struct
     int32_t cur_buf_index;
     int32_t write_index;
     int32_t cnt[2];
-    char *log_path;
-    char *log_name;
+    const char *log_path;
+    const char *log_name;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
 } log_queue_t;
@@ -83,9 +83,9 @@ static int32_t read_can_msg_log(int32_t sock_fd, char *str, int32_t len)
 
 static int32_t init_can_log_queue(log_queue_t *q, const char *log_path, const char *log_name)
 {
-    (void)memset(q, 0, sizeof(log_queue_t));
     q->log_path = log_path;
     q->log_name = log_name;
+
     (void)pthread_mutex_init(&q->mutex, NULL);
     (void)pthread_cond_init(&q->cond, NULL);
     return 0;
@@ -207,9 +207,9 @@ static void *dy_candump_pthread(void *arg)
 
         if (true == *log_flag)
         {
-            char msg[MAX_LOG_MSG_LEN] = {'\0'};
-            read_can_msg_log(sock_fd, msg, MAX_LOG_MSG_LEN);
-            double_buffer_push(&g_log_queue, msg);
+            char log_msg[MAX_LOG_MSG_LEN] = {'\0'};
+            read_can_msg_log(sock_fd, log_msg, MAX_LOG_MSG_LEN);
+            double_buffer_push(&g_log_queue, log_msg);
         }
         else
         {

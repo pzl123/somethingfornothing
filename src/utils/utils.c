@@ -58,6 +58,12 @@ static void write_frm_td(char* str, log_level_e level)
 
 }
 
+uint64_t gettime_msec(void)
+{
+    struct timespec tp = {0};
+    (void)clock_gettime(CLOCK_MONOTONIC, &tp);
+    return ((uint64_t)tp.tv_sec * 1000) + (tp.tv_nsec / (1000 * 1000));
+}
 
 
 void get_time_with_ms(char *time_str, size_t len)

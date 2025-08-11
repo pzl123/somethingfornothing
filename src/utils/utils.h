@@ -4,6 +4,7 @@
 
 #include <stdbool.h>
 #include <pthread.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,6 +27,9 @@ extern "C" {
 void errif_debug(const char* type, int line, const char *file, pthread_t pid, const char *fmt, ...);
 
 void log_init(void);
+
+uint64_t gettime_msec(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

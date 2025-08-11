@@ -9,6 +9,8 @@
     mkdir build && cd build
     # 指定 x86_64-linux-gnu 平台
     cmake -DCMAKE_TOOLCHAIN_FILE=../platform/x86_64.cmake ..
+    # 指定 aarch64-none-linux-gnu 平台
+    cmake -DCMAKE_TOOLCHAIN_FILE=../platform/aarch64-none-linux-gnu.cmake ..
     # 开启 asan
     cmake -DCMAKE_TOOLCHAIN_FILE=../platform/x86_64.cmake -DBUILD_ASAN=ON ..
     # LOG_STDOUT 输出到TTL, -LOG_LEVEL=0-3 :DEBUG INFO WARN ERROR DEFAULT
