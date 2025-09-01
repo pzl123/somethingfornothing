@@ -1,34 +1,37 @@
 #include <iostream>
+#include <memory>
+#include <vector>
+#include <unordered_map>
+#include <algorithm>
+#include <map>
+#include <queue>
 
 #include "utils/cache/lru.h"
 #include "database/init.h"
 #include "database/dao/pcu_relay_cnt/pcu_relay_cnt.h"
 #include "fcgi/fcgi.h"
 #include "relay/relay.h"
+#include "utils/priority_queue/priority_queue.h"
+#include "can/can.h"
+#include "peventloop/monotonic.h"
+#include "utils/timer.h"
 
+#include "mode/singleton.h"
+#include "mode/composite.h"
+#include "mode/template.h"
+
+#include "tcp/ccu.h"
+#include "config/config_cmp_key.h"
 
 int main(void)
 {
-    log_init();
-    dao_t *dao = dao_init();
-    pcu_relay_cnt_t *relay_cnt = get_relay_cnt();
-    for (uint8_t i = 0; i < 6; i++)
-    {
-        pcu_relay_cnt_dao_create(&dao->pcu_relay_cnt_dao, &relay_cnt[i]);
-    }
-
-
-    pcu_do_branch_relay_e relay_id = DO_DC_INPUT2_PRE;
-    pcu_relay_cnt_t res;
-    pcu_relay_cnt_dao_get_by_relay_id(&dao->pcu_relay_cnt_dao, relay_id, &res);
-    d_log("DO_DC_INPUT2_PRE cnt:%d", res.close_cnt);
-
-    pcu_relay_cnt_dao_delete_by_relay_id(&dao->pcu_relay_cnt_dao, DO_DC_INPUT1_POS);
-    pcu_relay_cnt_t p = {7, DO_DC_INPUT1_NEG, 212};
-    pcu_relay_cnt_dao_update_by_relay_id(&dao->pcu_relay_cnt_dao, DO_DC_INPUT1_NEG, &p);
-
-    fcgi_main(dao);
-
-    dao_clear();
+    // pthread_t tid;
+    // (void)pthread_create(&tid, NULL, &ccu_server_start_internal, NULL);
+    // (void)pthread_detach(tid);
+    // while (1)
+    // {
+    //     sleep(1);
+    // }
+    test_config_cmp_key();
     return 0;
 }

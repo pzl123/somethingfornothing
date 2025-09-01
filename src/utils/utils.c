@@ -8,7 +8,9 @@
 #include <sys/time.h>
 #include <pthread.h>
 #include <stdint.h>
+#include <sys/stat.h>
 
+#include "hv/hbase.h"
 
 
 typedef enum
@@ -58,6 +60,12 @@ static void write_frm_td(char* str, log_level_e level)
 
 }
 
+uint64_t gettime_msec(void)
+{
+    struct timespec tp = {0};
+    (void)clock_gettime(CLOCK_MONOTONIC, &tp);
+    return ((uint64_t)tp.tv_sec * 1000) + (tp.tv_nsec / (1000 * 1000));
+}
 
 
 void get_time_with_ms(char *time_str, size_t len)
@@ -134,4 +142,40 @@ void log_init(void)
 {
     FILE *fp  = fopen(LOG_PATH, "a+");
     fclose(fp);
+}
+
+
+int32_t make_dir_recursive(const char *path)
+{
+    if (path == NULL)
+    {
+        return -2;
+    }
+
+    char tmp_path[FILE_PATH_MAX_LEN + 1] = {0};
+    (void)hv_strncpy(tmp_path, path, FILE_PATH_MAX_LEN);
+
+    /* 从根开始逐级创建每个目录 */
+    for (char *p = tmp_path + 1; *p; p++)
+    {
+        if (*p == '/')
+        {
+            *p = '\0';
+            if ((mkdir(tmp_path, S_IRWXU) != 0) && (errno != EEXIST))
+            {
+                e_log("mkdir ");
+                return -1;
+            }
+            *p = '/';
+        }
+    }
+
+    /* 创建最终的目录 */
+    if ((mkdir(tmp_path, S_IRWXU) != 0) && (errno != EEXIST))
+    {
+        e_log("mkdir");
+        return -1;
+    }
+
+    return -2;
 }

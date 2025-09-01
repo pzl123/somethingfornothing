@@ -1,0 +1,4 @@
+2025-08-11 14:53:17.590 WARN  connfd=3 connect error: Transport endpoint is not connected:107 [nio.c:226:nio_connect]
+2025-08-11 14:53:40.228 ERROR hio_write called but fd[3] already closed! [nio.c:490:hio_write]
+2025-08-11 14:53:41.227 ERROR hio_write called but fd[3] already closed! [nio.c:490:hio_write]
+2025-08-11 14:53:42.222 ERROR hio_write called but fd[3] already closed! [nio.c:490:hio_write]
