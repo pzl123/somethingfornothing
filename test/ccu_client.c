@@ -15,8 +15,8 @@ void on_timer(htimer_t *timer)
     datetime_t dt = datetime_now();
     datetime_fmt(&dt, str);
 
-    printf("> ccu_client %s\n", str);
     hio_t *io = (hio_t *)hevent_userdata(timer);
+    printf("> ccu(%d) %s\n", hio_id(io), str);
     hio_write(io, str, strlen(str));
 }
 

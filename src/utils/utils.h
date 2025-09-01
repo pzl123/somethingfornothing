@@ -11,6 +11,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 #define LOG_PATH "/home/zlgmcu/project/learnC++/log/log"
+#define FILE_PATH_MAX_LEN 128 /* 文件路径最大缓冲长度 */
 
 #define d_log(fmt, ...) \
     errif_debug("DEBUG", __LINE__, __FILE__, pthread_self(), fmt, ##__VA_ARGS__)
@@ -29,6 +30,9 @@ void errif_debug(const char* type, int line, const char *file, pthread_t pid, co
 void log_init(void);
 
 uint64_t gettime_msec(void);
+
+
+int32_t make_dir_recursive(const char *path);
 
 #ifdef __cplusplus
 }

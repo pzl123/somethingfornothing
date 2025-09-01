@@ -1,0 +1,18 @@
+{
+	"pcu_id":	1,
+	"branch_system":	2,
+	"ccu_num":	4,
+	"dc_dc_model":	1,
+	"meter_model":	1,
+	"device_control_mode":	1,
+	"dcdc_alarm_mode":	1,
+	"pdu_alarm_mode":	1,
+	"meter_alarm_mode":	1,
+	"high_vol_input_mode":	1,
+	"spd_enable":	true,
+	"door_access_enable":	true,
+	"waterlogging_enable":	true,
+	"topple_enable":	true,
+	"fan_start_temp":	40,
+	"work_altitude":	1000
+}
