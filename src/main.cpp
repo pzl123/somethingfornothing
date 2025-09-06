@@ -15,6 +15,7 @@
 #include "can/can.h"
 #include "peventloop/monotonic.h"
 #include "utils/timer.h"
+#include "ocpp/websock_client.h"
 
 #include "mode/singleton.h"
 #include "mode/composite.h"
@@ -25,13 +26,7 @@
 
 int main(void)
 {
-    // pthread_t tid;
-    // (void)pthread_create(&tid, NULL, &ccu_server_start_internal, NULL);
-    // (void)pthread_detach(tid);
-    // while (1)
-    // {
-    //     sleep(1);
-    // }
-    test_config_cmp_key();
+    // test_config_cmp_key();
+    websocket_test();
     return 0;
 }

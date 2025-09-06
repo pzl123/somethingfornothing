@@ -92,61 +92,6 @@ void traverse_all_keys_recursive(const cJSON *object, const char *parent_key)
     free(str);
 }
 
-static int cf_case_insensitive_strcmp(const unsigned char *string1, const unsigned char *string2)
-{
-    if ((string1 == NULL) || (string2 == NULL))
-    {
-        return 1;
-    }
-
-    if (string1 == string2)
-    {
-        return 0;
-    }
-
-    for(; tolower(*string1) == tolower(*string2); (void)string1++, string2++)
-    {
-        if (*string1 == '\0')
-        {
-            return 0;
-        }
-    }
-
-    return tolower(*string1) - tolower(*string2);
-}
-
-static cJSON *cf_get_object_item(const cJSON * const object, const char * const name, const cJSON_bool case_sensitive)
-{
-    cJSON *current_element = NULL;
-
-    if ((object == NULL) || (name == NULL))
-    {
-        return NULL;
-    }
-
-    current_element = object->child;
-    if (case_sensitive)
-    {
-        while ((current_element != NULL) && (current_element->string != NULL) && (strcmp(name, current_element->string) != 0))
-        {
-            current_element = current_element->next;
-        }
-    }
-    else
-    {
-        while ((current_element != NULL) && (cf_case_insensitive_strcmp((const unsigned char*)name, (const unsigned char*)(current_element->string)) != 0))
-        {
-            current_element = current_element->next;
-        }
-    }
-
-    if ((current_element == NULL) || (current_element->string == NULL)) {
-        return NULL;
-    }
-
-    return current_element;
-}
-
 static bool MergeNode(const cJSON *a, const cJSON *b, cJSON *a1, cJSON_bool case_sensitive)
 {
     if ((a == NULL) || (b == NULL) || (NULL == a1))
