@@ -147,26 +147,34 @@ static cJSON *cf_get_object_item(const cJSON * const object, const char * const 
     return current_element;
 }
 
-static CJSON_PUBLIC(cJSON_bool) cJSON_add_object_to_a(cJSON * const a, cJSON * const object)
+static bool MergeNode(const cJSON *a, const cJSON *b, cJSON *a1, cJSON_bool case_sensitive)
 {
-    cJSON *new_item = cJSON_Duplicate(object, true);
-    if (NULL == new_item)
+    if ((a == NULL) || (b == NULL) || (NULL == a1))
     {
-        d_log("a failed add key %s to b", object->string);
         return false;
     }
-    else
-    {
-        d_log("%s add key:%s to b", a->string, object->string);
-        return cJSON_AddItemToObject(a, object->string, new_item);
-    }
-}
 
-
-static void MergeNode(const cJSON *a, const cJSON *b, cJSON *a1, cJSON_bool case_sensitive)
-{
     switch (a->type & 0xFF)
     {
+        case cJSON_False:
+        case cJSON_True:
+        case cJSON_NULL:
+            a1->type = b->type & 0xFF;
+            break;
+
+        case cJSON_Number:
+            cJSON_SetNumberValue(a1, b->valuedouble);
+            a1->valueint = b->valueint;
+            a1->type = cJSON_Number;
+            break;
+
+        case cJSON_String:
+        case cJSON_Raw:
+            if (!cJSON_SetValuestring(a1, b->valuestring)) {
+                return false;
+            }
+            a1->type = b->type & 0xFF;
+            break;
         case cJSON_Object:
         {
             cJSON *a_child = NULL;
@@ -178,15 +186,20 @@ static void MergeNode(const cJSON *a, const cJSON *b, cJSON *a1, cJSON_bool case
                 {
                     continue;
                 }
-                b_child = cf_get_object_item(b, a_child->string, case_sensitive);
+                b_child = cJSON_GetObjectItemCaseSensitive(b, a_child->string);
 
                 if (b_child != NULL)
                 {
                     cJSON *b_copy = cJSON_Duplicate(b_child, true);
-                    if (b_copy != NULL)
+                    if (NULL == b_copy)
                     {
-                        cJSON_DeleteItemFromObjectCaseSensitive(a1, a_child->string);
-                        (void)cJSON_AddItemToObject(a1, a_child->string, b_copy);
+                        e_log("error duplicate b");
+                        return false;
+                    }
+                    else
+                    {
+                        cJSON *a1_existing = cJSON_GetObjectItemCaseSensitive(a1, a_child->string);
+                        cJSON_ReplaceItemViaPointer(a1, a1_existing, b_copy);
                     }
                 }
 
@@ -219,6 +232,26 @@ static void MergeNode(const cJSON *a, const cJSON *b, cJSON *a1, cJSON_bool case
         default:
             break;
     }
+    return true;
+}
+
+static bool is_valid_cjson_type(int type)
+{
+    type &= 0xFF;
+    switch (type)
+    {
+        case cJSON_False:
+        case cJSON_True:
+        case cJSON_NULL:
+        case cJSON_Number:
+        case cJSON_String:
+        case cJSON_Raw:
+        case cJSON_Array:
+        case cJSON_Object:
+            return true;
+        default:
+            return false;
+    }
 }
 
 CJSON_PUBLIC(cJSON*) cJSON_MergeWithTemplate(const cJSON *a, const cJSON *b, cJSON_bool case_sensitive)
@@ -226,6 +259,12 @@ CJSON_PUBLIC(cJSON*) cJSON_MergeWithTemplate(const cJSON *a, const cJSON *b, cJS
     if ((NULL == a) || (NULL == b))
     {
         e_log("a or b is NULL");
+        return NULL;
+    }
+
+    if ((false == is_valid_cjson_type(a->type)) || (false == is_valid_cjson_type(b->type)))
+    {
+        e_log("error type: %d, %d", a->type, b->type);
         return NULL;
     }
 
@@ -256,14 +295,26 @@ void test_config_cmp_key(void)
     cJSON *new_pcu_json = cJSON_MergeWithTemplate(default_pcu_json, pcu_json, true);
     replace_object(PCU_CONFING_NAME, new_pcu_json, CFG_CURRENT);
     cJSON *updated_pcu_json = get_config(PCU_CONFING_NAME);
-    d_log("pcu_json before default_pcu_json add xxxx_id");
+    d_log("pcu_json after default_pcu_json add xxxx_id");
     print_cjson_object(updated_pcu_json);
 
     cJSON_DeleteItemFromObjectCaseSensitive(default_pcu_json, "work_altitude");
     cJSON *new_pcu_json1 = cJSON_MergeWithTemplate(default_pcu_json, pcu_json, true);
     replace_object(PCU_CONFING_NAME, new_pcu_json1, CFG_CURRENT);
     cJSON *updated_pcu_json1 = get_config(PCU_CONFING_NAME);
-    d_log("pcu_json before default_pcu_json delete work_altitude");
+    d_log("pcu_json after default_pcu_json delete work_altitude");
     print_cjson_object(updated_pcu_json1);
 
+    cJSON *json1 = cJSON_CreateNumber(10);
+    cJSON *json2 = cJSON_CreateNumber(20);
+    cJSON *json3 = cJSON_CreateFalse();
+    cJSON *json4 = cJSON_CreateTrue();
+    cJSON *json7 = cJSON_CreateString("aaaaa");
+    cJSON *json8 = cJSON_CreateString("bbbbb");
+    cJSON *json5 = cJSON_MergeWithTemplate(json1, json2, true);
+    cJSON *json6 = cJSON_MergeWithTemplate(json3, json4, true);
+    cJSON *json9 = cJSON_MergeWithTemplate(json7, json8, true);
+    d_log("template:%s, value:%s, target:%s", cJSON_Print(json1), cJSON_Print(json2), cJSON_Print(json5));
+    d_log("template:%s, value:%s, target:%s", cJSON_Print(json3), cJSON_Print(json4), cJSON_Print(json6));
+    d_log("template:%s, value:%s, target:%s", cJSON_Print(json7), cJSON_Print(json8), cJSON_Print(json9));
 }

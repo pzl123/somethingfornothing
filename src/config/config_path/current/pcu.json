@@ -1,6 +1,4 @@
 {
-	"topple_enable":	true,
-	"xxxx_id":	1,
 	"pcu_id":	30,
 	"branch_system":	2,
 	"ccu_num":	4,
@@ -14,5 +12,7 @@
 	"spd_enable":	true,
 	"door_access_enable":	true,
 	"waterlogging_enable":	true,
-	"fan_start_temp":	40
+	"topple_enable":	true,
+	"fan_start_temp":	40,
+	"xxxx_id":	1
 }

@@ -355,16 +355,15 @@ bool replace_object(const char *name, cJSON *config, config_type_e config_type)
         e_log("api error");
         return false;
     }
-    char *config_name = NULL;
+    char config_name[128];
+    memset(&config_name, 0, sizeof(config_name));
     if (CFG_DEFAULT == config_type)
     {
-        char *default_name = name_add_prefix(name);
-        config_name= name_add_suffix(default_name);
-        free(default_name);
+        snprintf(config_name, sizeof(config_name), "default_%s.json", name);
     }
     else if (CFG_CURRENT == config_type)
     {
-        config_name = name_add_suffix(name);
+        snprintf(config_name, sizeof(config_name), "%s.json", name);
     }
     config_manage_t *s = find_config_item(CFG_DEFAULT == config_type ? g_default_config_manage : g_config_manage, config_name);
     if (NULL == s)
@@ -382,7 +381,6 @@ bool replace_object(const char *name, cJSON *config, config_type_e config_type)
         (void)pthread_rwlock_unlock(&s->value_lock);
         cJSON_Delete(old_value);
     }
-    free(config_name);
     return true;
 }
 
