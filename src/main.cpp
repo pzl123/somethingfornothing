@@ -27,6 +27,6 @@
 int main(void)
 {
     // test_config_cmp_key();
-    websocket_test();
+    web_socket_client_test();
     return 0;
 }

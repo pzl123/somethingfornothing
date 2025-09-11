@@ -3,9 +3,9 @@
 
 
 #include "websocket/libwebsockets.h"
+#include <stdint.h>
 
 
-
-int websocket_test(void);
+int32_t web_socket_client_test(void);
 
 #endif /* WEBSOCK_CLIENT */
