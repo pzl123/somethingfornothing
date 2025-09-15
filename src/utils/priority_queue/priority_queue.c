@@ -41,12 +41,20 @@ pq_t *pq_init(int32_t capacity, int32_t (*compare)(pv_t* A, pv_t *b))
 
 bool pq_delete(pq_t *pq)
 {
-    if (!pq)
+    if (pq == NULL)
     {
-        free(pq->elements);
         return true;
     }
-    return false;
+
+    pthread_mutex_destroy(&pq->mutex);
+    pthread_cond_destroy(&pq->cond);
+
+    if (pq->elements != NULL)
+    {
+        free(pq->elements);
+    }
+    free(pq);
+    return true;
 }
 
 static void swap_elements(pv_t* father, pv_t *chil)
@@ -119,16 +127,18 @@ pv_t pq_top(pq_t *pq)
 
 bool priority_queue_pop(pq_t *pq, pv_t *item)
 {
-    if (NULL == pq || 0 >= pq->size || NULL == item)
+    if (NULL == pq || NULL == item)
     {
         return false;
     }
 
     pthread_mutex_lock(&pq->mutex);
+
     while (pq_empty(pq))
     {
         pthread_cond_wait(&pq->cond, &pq->mutex);
     }
+
     *item = pq->elements[0];
     pq->size--;
     pq->elements[0] = pq->elements[pq->size];
