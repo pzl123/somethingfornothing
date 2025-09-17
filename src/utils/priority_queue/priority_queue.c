@@ -19,7 +19,7 @@ pq_t *pq_init(int32_t capacity, int32_t (*compare)(pv_t *A, pv_t *b))
 {
     if (NULL == compare)
     {
-        log_e("compare func is NULL");
+        e_log("compare func is NULL");
         return NULL;
     }
     pq_t *pq = (pq_t *)malloc(sizeof(pq_t));
@@ -93,7 +93,7 @@ bool priority_queue_push(pq_t *pq, pv_t item)
 {
     if (NULL == pq || NULL == pq->elements)
     {
-        log_e("Invalid queue");
+        e_log("Invalid queue");
         return false;
     }
 
@@ -132,7 +132,7 @@ pv_t pq_top(pq_t *pq)
 {
     if (pq == NULL || pq->size == 0)
     {
-        log_e("Queue is empty or invalid");
+        e_log("Queue is empty or invalid");
         pv_t empty = {0, NULL, 0};
         return empty;
     }
@@ -235,7 +235,7 @@ bool pq_full(pq_t *pq)
 {
     if (NULL == pq)
     {
-        log_e("Invalid queue pointer");
+        e_log("Invalid queue pointer");
         return true;
     }
     return pq->size >= pq->capacity;
@@ -245,7 +245,7 @@ bool pq_empty(pq_t *pq)
 {
     if (NULL == pq)
     {
-        log_e("Invalid queue pointer");
+        e_log("Invalid queue pointer");
         return true;
     }
     return pq->size == 0;
