@@ -196,7 +196,7 @@ private:
     void workloop()
     {
         std::thread::id self_id = std::this_thread::get_id();
-        // d_log("Worker thread %zu started", std::hash<std::thread::id>{}(self_id));
+        d_log("Worker thread %zu started", std::hash<std::thread::id>{}(self_id));
         while (true)
         {
             TaskWrapper task;
@@ -215,7 +215,7 @@ private:
                         {
                             std::lock_guard<std::mutex> finishLock(m_finishedMutex);
                             m_finishedThreadId.push(self_id); /* 标识自己退出 */
-                            // d_log("Thread %zu timeout, marked for cleanup", std::hash<std::thread::id>{}(self_id));
+                            d_log("Thread %zu timeout, marked for cleanup", std::hash<std::thread::id>{}(self_id));
                         }
                         return; /* 当前线程超时并且当前线程数大于核心线程数时直接退出该线程, 线程池缩容 */
                     }
@@ -233,7 +233,7 @@ private:
                         {
                             std::lock_guard<std::mutex> finishLock(m_finishedMutex);
                             m_finishedThreadId.push(std::this_thread::get_id()); /* 标识自己退出 */
-                            // d_log("Thread %zu force stop, marked for cleanup", std::hash<std::thread::id>{}(self_id));
+                            d_log("Thread %zu force stop, marked for cleanup", std::hash<std::thread::id>{}(self_id));
                         }
                         return;
                     }
@@ -244,7 +244,7 @@ private:
                         {
                             std::lock_guard<std::mutex> finishLock(m_finishedMutex);
                             m_finishedThreadId.push(std::this_thread::get_id()); /* 标识自己退出 */
-                            // d_log("Thread %zu m_isStopping && m_taskQueue empty, marked for cleanup", std::hash<std::thread::id>{}(self_id));
+                            d_log("Thread %zu m_isStopping && m_taskQueue empty, marked for cleanup", std::hash<std::thread::id>{}(self_id));
 
                         }
                         return;
@@ -287,7 +287,7 @@ private:
 
     void createWorkThread()
     {
-        // d_log("Creating new worker thread...");
+        d_log("Creating new worker thread...");
         std::thread t(&ThreadPool::workloop, this);
         std::thread::id tid = t.get_id();
         {
@@ -339,7 +339,7 @@ private:
         }
         else
         {
-            // d_log("No scaling: queue=%u, current=%u, max=%u", taskQueueSize, m_currentThreads.load(), m_maxThreads);
+            d_log("No scaling: queue=%u, current=%u, max=%u", taskQueueSize, m_currentThreads.load(), m_maxThreads);
         }
         cleanupFinishedThreads();
     }
