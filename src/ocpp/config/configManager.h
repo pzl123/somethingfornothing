@@ -37,6 +37,8 @@ namespace ocpp1_6
         bool saveCacheConfig();
         uint32_t getChangeConfigActionLevel() { return m_configActionLevel; }
         bool isReadOnly(const std::string& key, bool& bread);
+        const rapidjson::Document &getAllConfig() const;
+        bool deleteCacheConfigFile(bool deleteCache);
 
 
     private:
@@ -46,7 +48,7 @@ namespace ocpp1_6
         void initReadOnlyConfig(); /* 初始化只读配置 */
 
         rapidjson::Document m_cacheConfig; /*配置*/
-        rapidjson::Document m_CfgOnlyRead; /* 只读配置项 */
+        rapidjson::Document m_cfgOnlyRead; /* 只读配置项 */
         // std::map<std::string, ReadOnlyConfig>   configProperties;    /*存储配置项只读性*/
         std::string m_defaultCfgPath; /*默认配置文件路径*/
         std::string m_currentCfgPath; /*当前配置文件路径*/

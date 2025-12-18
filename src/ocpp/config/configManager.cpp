@@ -25,11 +25,12 @@ namespace ocpp1_6
     {
         m_defaultCfgPath = m_defaultCfgPath + "ocpp_default_config.json";
         d_log("m_defaultCfgPath path: %s", m_defaultCfgPath.c_str());
-        if (0 > access(m_defaultCfgPath.c_str(), F_OK))
+        if (false == file_exist(m_defaultCfgPath.c_str()))
         {
             d_log("ocpp_default_config not exit, create it");
             (void)createDefaultConfig(m_defaultCfgPath);
         }
+
         m_restartOcppKeys =
         {
             "ChargePoint.ChargePointIdentifier",
@@ -111,69 +112,71 @@ namespace ocpp1_6
             "OCPP1_6.TransactionMessageRetryInterval",
             "OCPP1_6.ConnectionTimeOut"
         };
+        initReadOnlyConfig();
     }
 
     ConfigManager::~ConfigManager()
     {
+        deleteCacheConfigFile(false);
     }
 
     void ConfigManager::initReadOnlyConfig()
     {
         /* ocpp1_6配置 */
-        m_CfgOnlyRead[ocpp1_6::config::AllowOfflineTxForUnknownId] = false;
-        m_CfgOnlyRead[ocpp1_6::config::AuthorizationCacheEnabled] = false;
-        m_CfgOnlyRead[ocpp1_6::config::AuthorizeRemoteTxRequests] = true;
-        // m_CfgOnlyRead[ocpp1_6::config::BlinkRepeat] = false;
-        m_CfgOnlyRead[ocpp1_6::config::ClockAlignedDataInterval] = false;
-        m_CfgOnlyRead[ocpp1_6::config::ConnectionTimeOut] = false;
-        m_CfgOnlyRead[ocpp1_6::config::ConnectorPhaseRotation] = false;
-        m_CfgOnlyRead[ocpp1_6::config::ConnectorPhaseRotationMaxLength] = true;
-        m_CfgOnlyRead[ocpp1_6::config::GetConfigurationMaxKeys] = true;
-        m_CfgOnlyRead[ocpp1_6::config::HeartbeatInterval] = false;
-        // m_CfgOnlyRead[ocpp1_6::config::LightIntensity] = false;
-        m_CfgOnlyRead[ocpp1_6::config::LocalAuthorizeOffline] = false;
-        m_CfgOnlyRead[ocpp1_6::config::LocalPreAuthorize] = false;
-        // m_CfgOnlyRead[ocpp1_6::config::MaxEnergyOnInvalidId] = false;
-        m_CfgOnlyRead[ocpp1_6::config::MeterValuesAlignedData] = false;
-        m_CfgOnlyRead[ocpp1_6::config::MeterValuesAlignedDataMaxLength] = true;
-        m_CfgOnlyRead[ocpp1_6::config::MeterValuesSampledData] = false;
-        m_CfgOnlyRead[ocpp1_6::config::MeterValuesSampledDataMaxLength] = true;
-        m_CfgOnlyRead[ocpp1_6::config::MeterValueSampleInterval] = false;
-        // m_CfgOnlyRead[ocpp1_6::config::MinimumStatusDuration] = false;
-        m_CfgOnlyRead[ocpp1_6::config::NumberOfConnectors] = true;
-        m_CfgOnlyRead[ocpp1_6::config::ResetRetries] = false;
-        m_CfgOnlyRead[ocpp1_6::config::StopTransactionOnEVSideDisconnect] = false;
-        m_CfgOnlyRead[ocpp1_6::config::StopTransactionOnInvalidId] = false;
-        m_CfgOnlyRead[ocpp1_6::config::StopTxnAlignedData] = false;
-        m_CfgOnlyRead[ocpp1_6::config::StopTxnAlignedDataMaxLength] = true;
-        m_CfgOnlyRead[ocpp1_6::config::StopTxnSampledData] = false;
-        m_CfgOnlyRead[ocpp1_6::config::StopTxnSampledDataMaxLength] = true;
-        m_CfgOnlyRead[ocpp1_6::config::SupportedFeatureProfiles] = true;
-        m_CfgOnlyRead[ocpp1_6::config::SupportedFeatureProfilesMaxLength] = true;
-        m_CfgOnlyRead[ocpp1_6::config::TransactionMessageAttempts] = false;
-        m_CfgOnlyRead[ocpp1_6::config::TransactionMessageRetryInterval] = false;
-        m_CfgOnlyRead[ocpp1_6::config::UnlockConnectorOnEVSideDisconnect] = false;
-        m_CfgOnlyRead[ocpp1_6::config::WebSocketPingInterval] = false;
-        m_CfgOnlyRead[ocpp1_6::config::LocalAuthListEnabled] = false;
-        m_CfgOnlyRead[ocpp1_6::config::LocalAuthListMaxLength] = true;
-        m_CfgOnlyRead[ocpp1_6::config::SendLocalListMaxLength] = true;
-        m_CfgOnlyRead[ocpp1_6::config::ReserveConnectorZeroSupported] = true;
-        // m_CfgOnlyRead[ocpp1_6::config::ChargeProfileMaxStackLevel] = true;
-        // m_CfgOnlyRead[ocpp1_6::config::ChargingScheduleAllowedChargingRateUnit] = true;
-        // m_CfgOnlyRead[ocpp1_6::config::ChargingScheduleMaxPeriods] = true;
-        // m_CfgOnlyRead[ocpp1_6::config::ConnectorSwitch3to1PhaseSupported] = true;
-        // m_CfgOnlyRead[ocpp1_6::config::MaxChargingProfilesInstalled] = true;
+        m_cfgOnlyRead[ocpp1_6::config::AllowOfflineTxForUnknownId] = false;
+        m_cfgOnlyRead[ocpp1_6::config::AuthorizationCacheEnabled] = false;
+        m_cfgOnlyRead[ocpp1_6::config::AuthorizeRemoteTxRequests] = true;
+        // m_cfgOnlyRead[ocpp1_6::config::BlinkRepeat] = false;
+        m_cfgOnlyRead[ocpp1_6::config::ClockAlignedDataInterval] = false;
+        m_cfgOnlyRead[ocpp1_6::config::ConnectionTimeOut] = false;
+        m_cfgOnlyRead[ocpp1_6::config::ConnectorPhaseRotation] = false;
+        m_cfgOnlyRead[ocpp1_6::config::ConnectorPhaseRotationMaxLength] = true;
+        m_cfgOnlyRead[ocpp1_6::config::GetConfigurationMaxKeys] = true;
+        m_cfgOnlyRead[ocpp1_6::config::HeartbeatInterval] = false;
+        // m_cfgOnlyRead[ocpp1_6::config::LightIntensity] = false;
+        m_cfgOnlyRead[ocpp1_6::config::LocalAuthorizeOffline] = false;
+        m_cfgOnlyRead[ocpp1_6::config::LocalPreAuthorize] = false;
+        // m_cfgOnlyRead[ocpp1_6::config::MaxEnergyOnInvalidId] = false;
+        m_cfgOnlyRead[ocpp1_6::config::MeterValuesAlignedData] = false;
+        m_cfgOnlyRead[ocpp1_6::config::MeterValuesAlignedDataMaxLength] = true;
+        m_cfgOnlyRead[ocpp1_6::config::MeterValuesSampledData] = false;
+        m_cfgOnlyRead[ocpp1_6::config::MeterValuesSampledDataMaxLength] = true;
+        m_cfgOnlyRead[ocpp1_6::config::MeterValueSampleInterval] = false;
+        // m_cfgOnlyRead[ocpp1_6::config::MinimumStatusDuration] = false;
+        m_cfgOnlyRead[ocpp1_6::config::NumberOfConnectors] = true;
+        m_cfgOnlyRead[ocpp1_6::config::ResetRetries] = false;
+        m_cfgOnlyRead[ocpp1_6::config::StopTransactionOnEVSideDisconnect] = false;
+        m_cfgOnlyRead[ocpp1_6::config::StopTransactionOnInvalidId] = false;
+        m_cfgOnlyRead[ocpp1_6::config::StopTxnAlignedData] = false;
+        m_cfgOnlyRead[ocpp1_6::config::StopTxnAlignedDataMaxLength] = true;
+        m_cfgOnlyRead[ocpp1_6::config::StopTxnSampledData] = false;
+        m_cfgOnlyRead[ocpp1_6::config::StopTxnSampledDataMaxLength] = true;
+        m_cfgOnlyRead[ocpp1_6::config::SupportedFeatureProfiles] = true;
+        m_cfgOnlyRead[ocpp1_6::config::SupportedFeatureProfilesMaxLength] = true;
+        m_cfgOnlyRead[ocpp1_6::config::TransactionMessageAttempts] = false;
+        m_cfgOnlyRead[ocpp1_6::config::TransactionMessageRetryInterval] = false;
+        m_cfgOnlyRead[ocpp1_6::config::UnlockConnectorOnEVSideDisconnect] = false;
+        m_cfgOnlyRead[ocpp1_6::config::WebSocketPingInterval] = false;
+        m_cfgOnlyRead[ocpp1_6::config::LocalAuthListEnabled] = false;
+        m_cfgOnlyRead[ocpp1_6::config::LocalAuthListMaxLength] = true;
+        m_cfgOnlyRead[ocpp1_6::config::SendLocalListMaxLength] = true;
+        m_cfgOnlyRead[ocpp1_6::config::ReserveConnectorZeroSupported] = true;
+        // m_cfgOnlyRead[ocpp1_6::config::ChargeProfileMaxStackLevel] = true;
+        // m_cfgOnlyRead[ocpp1_6::config::ChargingScheduleAllowedChargingRateUnit] = true;
+        // m_cfgOnlyRead[ocpp1_6::config::ChargingScheduleMaxPeriods] = true;
+        // m_cfgOnlyRead[ocpp1_6::config::ConnectorSwitch3to1PhaseSupported] = true;
+        // m_cfgOnlyRead[ocpp1_6::config::MaxChargingProfilesInstalled] = true;
 
         /* 拓展 配置 */
-        m_CfgOnlyRead[ocpp1_6::config::AdditionalRootCertificateCheck] = true;
-        m_CfgOnlyRead[ocpp1_6::config::AuthorizationKey] = false;
-        m_CfgOnlyRead[ocpp1_6::config::CertificateSignedMaxChainSize] = true;
-        m_CfgOnlyRead[ocpp1_6::config::CertificateStoreMaxLength] = true;
-        m_CfgOnlyRead[ocpp1_6::config::CpoName] = false;
-        m_CfgOnlyRead[ocpp1_6::config::SecurityProfile] = true;
+        m_cfgOnlyRead[ocpp1_6::config::AdditionalRootCertificateCheck] = true;
+        m_cfgOnlyRead[ocpp1_6::config::AuthorizationKey] = false;
+        m_cfgOnlyRead[ocpp1_6::config::CertificateSignedMaxChainSize] = true;
+        m_cfgOnlyRead[ocpp1_6::config::CertificateStoreMaxLength] = true;
+        m_cfgOnlyRead[ocpp1_6::config::CpoName] = false;
+        m_cfgOnlyRead[ocpp1_6::config::SecurityProfile] = true;
 
         /* Firmware and Diagnostics File Transfer */
-        m_CfgOnlyRead[ocpp1_6::config::SupportedFileTransferProtocols] = true;
+        m_cfgOnlyRead[ocpp1_6::config::SupportedFileTransferProtocols] = true;
 
     }
 
@@ -636,6 +639,53 @@ namespace ocpp1_6
 
     bool ConfigManager::isReadOnly(const std::string& key, bool& bread)
     {
+        if (m_cfgOnlyRead.HasMember(key.c_str()))
+        {
+            bread = m_cfgOnlyRead.GetBool();
+            return true;
+        }
+        return false;
+    }
 
+    const rapidjson::Document& ConfigManager::getAllConfig() const
+    {
+        return m_cacheConfig;
+    }
+
+    bool ConfigManager::deleteCacheConfigFile(bool deleteCache)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if (false == file_exist(m_currentCfgPath.c_str()))
+        {
+            e_log("cache config not exist, path:%s", m_currentCfgPath.c_str());
+            return false;
+        }
+
+        if (true == deleteCache)
+        {
+            if (false == file_remove(m_currentCfgPath.c_str())) /* 移除当前cache 下次重启复制default */
+            {
+                e_log("remove cache config failed, path:%s", m_currentCfgPath.c_str());
+                return false;
+            }
+            return true;
+        }
+        else
+        {
+            /* 将cache 保存到 当前 cache config */
+            std::ofstream ofs(m_currentCfgPath);
+            if (false == ofs.is_open())
+            {
+                e_log("Failed to open config file for writing: %s", m_currentCfgPath.c_str());
+                return false;
+            }
+
+            rapidjson::StringBuffer buffer;
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+            m_cacheConfig.Accept(writer);
+
+            ofs << buffer.GetString();
+            ofs.close();
+        }
     }
 }
