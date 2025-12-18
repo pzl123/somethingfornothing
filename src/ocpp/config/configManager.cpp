@@ -1,108 +1,172 @@
 #include <iostream>
+#include <unistd.h>
+#include <mutex>
+#include <sstream>
 
 #include "configManager.h"
 #include "standardConfigurationKeyNames.h"
 #include "chargePointConfigurationKeynames.h"
 
 #include "utils/utils.h"
+#include "utils/file_utils.h"
 
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/prettywriter.h"
+#include "rapidjson/filereadstream.h"
+#include "rapidjson/error/en.h"
 
-#define DEFAULT_PATH "../../config_profile/app/ocpp/"
+#define DEFAULT_PATH "../config_profile/app/ocpp/"
+#define MAX_BUF_LEN_KB 65536
 
 namespace ocpp1_6
 {
     ConfigManager::ConfigManager(std::string path) : m_default_cfgPath(path), m_current_cfgPath("")
     {
-        m_default_cfgPath = m_default_cfgPath + "/ocpp_default_config.json";
-        d_log("config path: %s", m_default_cfgPath.c_str());
+        m_default_cfgPath = m_default_cfgPath + "ocpp_default_config.json";
+        d_log("m_default_cfgPath path: %s", m_default_cfgPath.c_str());
+        if (0 > access(m_default_cfgPath.c_str(), F_OK))
+        {
+            d_log("ocpp_default_config not exit, create it");
+            (void)createDefaultConfig(m_default_cfgPath);
+        }
         m_restartOcppKeys =
-            {
-                "ChargePoint.ChargePointIdentifier",
-                "ChargePoint.ChargePointSerialNumber",
-                "ChargePoint.MeterSerialNumber",
-                "ChargePoint.MeterType",
-                "ChargePoint.Protocol",
-                "ChargePoint.SecurityProfile",
-                "ChargePoint.JsonSchemasPath",
-                "ChargePoint.DatabasePath",
-                "ChargePoint.FirmwareVersion",
-                "ChargePoint.Model",
-                "ChargePoint.Vendor",
-                "ChargePoint.Iccid",
-                "ChargePoint.Imsi",
-                "ChargePoint.ClientCertificateRequestEcCurve",
-                "ChargePoint.ClientCertificateRequestHashType",
-                "ChargePoint.ClientCertificateRequestKeyType",
-                "ChargePoint.ClientCertificateRequestRsaKeyLength",
-                "ChargePoint.ClientCertificateRequestSubjectCountry",
-                "ChargePoint.ClientCertificateRequestSubjectEmail",
-                "ChargePoint.ClientCertificateRequestSubjectLocation",
-                "ChargePoint.ClientCertificateRequestSubjectOrganizationUnit",
-                "ChargePoint.ClientCertificateRequestSubjectState",
-                "ChargePoint.InternalCertificateManagementEnabled",
-                "OCPP1_6.AuthorizationCacheEnabled",
-                "OCPP1_6.AuthorizeRemoteTxRequests",
-                "OCPP1_6.AllowOfflineTxForUnknownId"};
+        {
+            "ChargePoint.ChargePointIdentifier",
+            "ChargePoint.ChargePointSerialNumber",
+            "ChargePoint.MeterSerialNumber",
+            "ChargePoint.MeterType",
+            "ChargePoint.Protocol",
+            "ChargePoint.SecurityProfile",
+            "ChargePoint.JsonSchemasPath",
+            "ChargePoint.DatabasePath",
+            "ChargePoint.FirmwareVersion",
+            "ChargePoint.Model",
+            "ChargePoint.Vendor",
+            "ChargePoint.Iccid",
+            "ChargePoint.Imsi",
+            "ChargePoint.ClientCertificateRequestEcCurve",
+            "ChargePoint.ClientCertificateRequestHashType",
+            "ChargePoint.ClientCertificateRequestKeyType",
+            "ChargePoint.ClientCertificateRequestRsaKeyLength",
+            "ChargePoint.ClientCertificateRequestSubjectCountry",
+            "ChargePoint.ClientCertificateRequestSubjectEmail",
+            "ChargePoint.ClientCertificateRequestSubjectLocation",
+            "ChargePoint.ClientCertificateRequestSubjectOrganizationUnit",
+            "ChargePoint.ClientCertificateRequestSubjectState",
+            "ChargePoint.InternalCertificateManagementEnabled",
+            "OCPP1_6.AuthorizationCacheEnabled",
+            "OCPP1_6.AuthorizeRemoteTxRequests",
+            "OCPP1_6.AllowOfflineTxForUnknownId"
+        };
 
         m_restartWebSocketKeys =
-            {
-                "ChargePoint.ConnectionUrl",
-                "ChargePoint.ConnectionTimeout",
-                "ChargePoint.RetryInterval",
-                "ChargePoint.CallRequestTimeout",
-                "OCPP1_6.AuthorizationKey",
-                "ChargePoint.Tlsv12CipherList",
-                "ChargePoint.Tlsv13CipherList",
-                "ChargePoint.TlsServerCertificateCa",
-                "ChargePoint.TlsClientCertificate",
-                "ChargePoint.TlsClientCertificatePrivateKey",
-                "ChargePoint.TlsClientCertificatePrivateKeyPassphrase",
-                "ChargePoint.TlsAllowSelfSignedCertificates",
-                "ChargePoint.TlsAllowExpiredCertificates",
-                "ChargePoint.TlsAcceptNonTrustedCertificates",
-                "ChargePoint.TlsSkipServerNameCheck",
-                "OCPP1_6.WebSocketPingInterval"};
+        {
+            "ChargePoint.ConnectionUrl",
+            "ChargePoint.ConnectionTimeout",
+            "ChargePoint.RetryInterval",
+            "ChargePoint.CallRequestTimeout",
+            "OCPP1_6.AuthorizationKey",
+            "ChargePoint.Tlsv12CipherList",
+            "ChargePoint.Tlsv13CipherList",
+            "ChargePoint.TlsServerCertificateCa",
+            "ChargePoint.TlsClientCertificate",
+            "ChargePoint.TlsClientCertificatePrivateKey",
+            "ChargePoint.TlsClientCertificatePrivateKeyPassphrase",
+            "ChargePoint.TlsAllowSelfSignedCertificates",
+            "ChargePoint.TlsAllowExpiredCertificates",
+            "ChargePoint.TlsAcceptNonTrustedCertificates",
+            "ChargePoint.TlsSkipServerNameCheck",
+            "OCPP1_6.WebSocketPingInterval"
+        };
 
         m_immediateEffectKeys =
-            {
-                "OCPP1_6.ClockAlignedDataInterval",
-                "OCPP1_6.ConnectorPhaseRotation",
-                "OCPP1_6.GetConfigurationMaxKeys",
-                "OCPP1_6.HeartbeatInterval",
-                "OCPP1_6.LocalAuthListEnabled",
-                "OCPP1_6.LocalAuthListMaxLength",
-                "OCPP1_6.LocalAuthorizeOffline",
-                "OCPP1_6.LocalPreAuthorize",
-                "OCPP1_6.MeterValueSampleInterval",
-                "OCPP1_6.MeterValuesAlignedData",
-                "OCPP1_6.MeterValuesAlignedDataMaxLength",
-                "OCPP1_6.MeterValuesSampledData",
-                "OCPP1_6.MeterValuesSampledDataMaxLength",
-                "OCPP1_6.NumberOfConnectors",
-                "OCPP1_6.ReserveConnectorZeroSupported",
-                "OCPP1_6.ResetRetries",
-                "OCPP1_6.SendLocalListMaxLength",
-                "OCPP1_6.StopTransactionOnEVSideDisconnect",
-                "OCPP1_6.StopTransactionOnInvalidId",
-                "OCPP1_6.StopTxnAlignedData",
-                "OCPP1_6.StopTxnAlignedDataMaxLength",
-                "OCPP1_6.StopTxnSampledData",
-                "OCPP1_6.StopTxnSampledDataMaxLength",
-                "OCPP1_6.SupportedFeatureProfiles",
-                "OCPP1_6.SupportedFeatureProfilesMaxLength",
-                "OCPP1_6.TransactionMessageAttempts",
-                "OCPP1_6.TransactionMessageRetryInterval",
-                "OCPP1_6.ConnectionTimeOut"};
+        {
+            "OCPP1_6.ClockAlignedDataInterval",
+            "OCPP1_6.ConnectorPhaseRotation",
+            "OCPP1_6.GetConfigurationMaxKeys",
+            "OCPP1_6.HeartbeatInterval",
+            "OCPP1_6.LocalAuthListEnabled",
+            "OCPP1_6.LocalAuthListMaxLength",
+            "OCPP1_6.LocalAuthorizeOffline",
+            "OCPP1_6.LocalPreAuthorize",
+            "OCPP1_6.MeterValueSampleInterval",
+            "OCPP1_6.MeterValuesAlignedData",
+            "OCPP1_6.MeterValuesAlignedDataMaxLength",
+            "OCPP1_6.MeterValuesSampledData",
+            "OCPP1_6.MeterValuesSampledDataMaxLength",
+            "OCPP1_6.NumberOfConnectors",
+            "OCPP1_6.ReserveConnectorZeroSupported",
+            "OCPP1_6.ResetRetries",
+            "OCPP1_6.SendLocalListMaxLength",
+            "OCPP1_6.StopTransactionOnEVSideDisconnect",
+            "OCPP1_6.StopTransactionOnInvalidId",
+            "OCPP1_6.StopTxnAlignedData",
+            "OCPP1_6.StopTxnAlignedDataMaxLength",
+            "OCPP1_6.StopTxnSampledData",
+            "OCPP1_6.StopTxnSampledDataMaxLength",
+            "OCPP1_6.SupportedFeatureProfiles",
+            "OCPP1_6.SupportedFeatureProfilesMaxLength",
+            "OCPP1_6.TransactionMessageAttempts",
+            "OCPP1_6.TransactionMessageRetryInterval",
+            "OCPP1_6.ConnectionTimeOut"
+        };
     }
 
     ConfigManager::~ConfigManager()
     {
     }
 
+    bool ConfigManager::loadConfig()
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+
+        if (false == file_exist(m_default_cfgPath.c_str())) /* 默认配置不存在 */
+        {
+            e_log("ocpp default config file not exist:%s", m_default_cfgPath.c_str());
+            if (false == createDefaultConfig(m_default_cfgPath))
+            {
+                /* 默认配置生成失败 */
+                e_log("create defaul config error");
+                return false;
+            }
+        }
+
+        m_current_cfgPath = std::string (extract_directory(m_default_cfgPath.c_str())) + "/ocpp_cache_config.json";
+        d_log("cache config path:%s", m_current_cfgPath.c_str());
+        if (false == file_exist(m_current_cfgPath.c_str()))
+        {
+            /* cache 文件不存在，默认从default复制一份 */
+            if (false == file_copy(m_current_cfgPath.c_str(), m_default_cfgPath.c_str()))
+            {
+                e_log("copy default ocpp config failed dst:%s, src:%s", m_current_cfgPath.c_str(), m_default_cfgPath.c_str());
+                return false;
+            }
+        }
+
+        /* 加载cache 配置 */
+        d_log("Loading configuration from: %s", m_current_cfgPath.c_str());
+        FILE *fp = fopen(m_current_cfgPath.c_str(), "rb");
+        if (nullptr == fp)
+        {
+            e_log("Failed to open config file: %s", m_current_cfgPath.c_str());
+            return false;
+        }
+        char readBuffer[MAX_BUF_LEN_KB]; // 64KB 缓冲区
+        rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
+        if (m_cache_config.ParseStream(is).HasParseError())
+        {
+            e_log("JSON parse error at offset %zu: %s", m_cache_config.GetErrorOffset(),GetParseError_En(m_cache_config.GetParseError()));
+            fclose(fp);
+            return false;
+        }
+        fclose(fp);
+        return true;
+
+    }
+
     bool ConfigManager::createDefaultConfig(const std::string &path)
     {
+
         /* 创建根节点 */
         rapidjson::Document defaultConfig;
         defaultConfig.SetObject();
@@ -223,6 +287,81 @@ namespace ocpp1_6
             ChargePointConfig.AddMember(rapidjson::StringRef(SecurityProfile), 1, allocator);
             defaultConfig.AddMember("ChargePoint", ChargePointConfig, allocator);
         }
+
+        if (false == file_exist(path.c_str()))
+        {
+            char *dir_path = extract_directory(path.c_str());
+            d_log("dir path:%s", dir_path);
+            (void)make_dir_recursive(dir_path);
+        }
+
+        std::ofstream ofs(path);
+        if (false == ofs.is_open())
+        {
+            e_log("Failed to open config file for writing: %s", path.c_str());
+            return false;
+        }
+
+        rapidjson::StringBuffer buffer;
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+        defaultConfig.Accept(writer);
+
+        ofs << buffer.GetString();
+        ofs.close();
+
         return true;
     };
+
+    bool ConfigManager::getConfig(const std::string &name, rapidjson::Value &value)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        rapidjson::Value *current = &m_cache_config;
+        std::istringstream iss(name);
+        std::string token;
+
+        while (std::getline(iss, token, '.'))
+        {
+            if (!current->IsObject() || !current->HasMember(token.c_str()))
+            {
+                e_log("Failed to get config: %s", name.c_str());
+                return false;
+            }
+            current = &(*current)[token.c_str()];
+        }
+        value = *current;
+        return true;
+    }
+
+    bool ConfigManager::SetConfig(const std::string &name, const rapidjson::Value &value)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+    }
+
+    void ConfigManager::findChangedKeys(const rapidjson::Value &oldVal, const rapidjson::Value &newVal, const std::string &path, std::vector<std::string> &changedKeys)
+    {
+
+    }
+
+    ActionLevel_e ConfigManager::evaluateConfigActionLevel(const std::string& key)
+    {
+        i_log("changed keys:%s", key.c_str());
+        if (m_restartOcppKeys.find(key) != m_restartOcppKeys.end())
+        {
+            return RESETOCPP;
+        }
+        else if (m_restartWebSocketKeys.find(key) != m_restartWebSocketKeys.end())
+        {
+            return RESETWEBSOCKET;
+        }
+        else if (m_immediateEffectKeys.find(key) != m_immediateEffectKeys.end())
+        {
+            return IMMEDIATE;
+        }
+        else
+        {
+            e_log("Unknown config key for action: %s", key.c_str());
+            return ERROR_KEY;
+        }
+    }
+
 }

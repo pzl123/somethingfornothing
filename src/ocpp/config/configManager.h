@@ -17,14 +17,28 @@
 
 namespace ocpp1_6
 {
+    typedef enum
+    {
+        ERROR_KEY = 0,
+        IMMEDIATE = 1,
+        RESETWEBSOCKET = 2,
+        RESETOCPP = 3
+    } ActionLevel_e;
+
     class ConfigManager
     {
     public:
         ConfigManager(std::string path);
 
         ~ConfigManager();
+        bool getConfig(const std::string& name, rapidjson::Value& value);
+        bool SetConfig(const std::string& name, const rapidjson::Value& value);
+        bool loadConfig();
 
+    private:
+        void findChangedKeys(const rapidjson::Value &oldVal, const rapidjson::Value &newVal, const std::string &path, std::vector<std::string> &changedKeys);
         bool createDefaultConfig(const std::string &path); /*创建默认配置*/
+        ActionLevel_e evaluateConfigActionLevel(const std::string& key);
 
         rapidjson::Document m_cache_config; /*配置*/
         rapidjson::Document m_bCfgRead;
