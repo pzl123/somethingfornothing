@@ -34,17 +34,22 @@ namespace ocpp1_6
         bool getConfig(const std::string& name, rapidjson::Value& value);
         bool SetConfig(const std::string& name, const rapidjson::Value& value);
         bool loadConfig();
+        bool saveCacheConfig();
+        uint32_t getChangeConfigActionLevel() { return m_configActionLevel; }
+        bool isReadOnly(const std::string& key, bool& bread);
+
 
     private:
         void findChangedKeys(const rapidjson::Value &oldVal, const rapidjson::Value &newVal, const std::string &path, std::vector<std::string> &changedKeys);
         bool createDefaultConfig(const std::string &path); /*创建默认配置*/
-        ActionLevel_e evaluateConfigActionLevel(const std::string& key);
+        ActionLevel_e evaluateConfigActionLevel(const std::vector<std::string>& keys);
+        void initReadOnlyConfig(); /* 初始化只读配置 */
 
-        rapidjson::Document m_cache_config; /*配置*/
-        rapidjson::Document m_bCfgRead;
+        rapidjson::Document m_cacheConfig; /*配置*/
+        rapidjson::Document m_CfgOnlyRead; /* 只读配置项 */
         // std::map<std::string, ReadOnlyConfig>   configProperties;    /*存储配置项只读性*/
-        std::string m_default_cfgPath; /*默认配置文件路径*/
-        std::string m_current_cfgPath; /*当前配置文件路径*/
+        std::string m_defaultCfgPath; /*默认配置文件路径*/
+        std::string m_currentCfgPath; /*当前配置文件路径*/
         mutable std::mutex m_mutex;    /*互斥锁*/
 
         uint32_t m_configActionLevel = 0;

@@ -14,20 +14,21 @@
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/filereadstream.h"
 #include "rapidjson/error/en.h"
+#include "rapidjson/document.h"
 
 #define DEFAULT_PATH "../config_profile/app/ocpp/"
 #define MAX_BUF_LEN_KB 65536
 
 namespace ocpp1_6
 {
-    ConfigManager::ConfigManager(std::string path) : m_default_cfgPath(path), m_current_cfgPath("")
+    ConfigManager::ConfigManager(std::string path) : m_defaultCfgPath(path), m_currentCfgPath("")
     {
-        m_default_cfgPath = m_default_cfgPath + "ocpp_default_config.json";
-        d_log("m_default_cfgPath path: %s", m_default_cfgPath.c_str());
-        if (0 > access(m_default_cfgPath.c_str(), F_OK))
+        m_defaultCfgPath = m_defaultCfgPath + "ocpp_default_config.json";
+        d_log("m_defaultCfgPath path: %s", m_defaultCfgPath.c_str());
+        if (0 > access(m_defaultCfgPath.c_str(), F_OK))
         {
             d_log("ocpp_default_config not exit, create it");
-            (void)createDefaultConfig(m_default_cfgPath);
+            (void)createDefaultConfig(m_defaultCfgPath);
         }
         m_restartOcppKeys =
         {
@@ -116,14 +117,74 @@ namespace ocpp1_6
     {
     }
 
+    void ConfigManager::initReadOnlyConfig()
+    {
+        /* ocpp1_6配置 */
+        m_CfgOnlyRead[ocpp1_6::config::AllowOfflineTxForUnknownId] = false;
+        m_CfgOnlyRead[ocpp1_6::config::AuthorizationCacheEnabled] = false;
+        m_CfgOnlyRead[ocpp1_6::config::AuthorizeRemoteTxRequests] = true;
+        // m_CfgOnlyRead[ocpp1_6::config::BlinkRepeat] = false;
+        m_CfgOnlyRead[ocpp1_6::config::ClockAlignedDataInterval] = false;
+        m_CfgOnlyRead[ocpp1_6::config::ConnectionTimeOut] = false;
+        m_CfgOnlyRead[ocpp1_6::config::ConnectorPhaseRotation] = false;
+        m_CfgOnlyRead[ocpp1_6::config::ConnectorPhaseRotationMaxLength] = true;
+        m_CfgOnlyRead[ocpp1_6::config::GetConfigurationMaxKeys] = true;
+        m_CfgOnlyRead[ocpp1_6::config::HeartbeatInterval] = false;
+        // m_CfgOnlyRead[ocpp1_6::config::LightIntensity] = false;
+        m_CfgOnlyRead[ocpp1_6::config::LocalAuthorizeOffline] = false;
+        m_CfgOnlyRead[ocpp1_6::config::LocalPreAuthorize] = false;
+        // m_CfgOnlyRead[ocpp1_6::config::MaxEnergyOnInvalidId] = false;
+        m_CfgOnlyRead[ocpp1_6::config::MeterValuesAlignedData] = false;
+        m_CfgOnlyRead[ocpp1_6::config::MeterValuesAlignedDataMaxLength] = true;
+        m_CfgOnlyRead[ocpp1_6::config::MeterValuesSampledData] = false;
+        m_CfgOnlyRead[ocpp1_6::config::MeterValuesSampledDataMaxLength] = true;
+        m_CfgOnlyRead[ocpp1_6::config::MeterValueSampleInterval] = false;
+        // m_CfgOnlyRead[ocpp1_6::config::MinimumStatusDuration] = false;
+        m_CfgOnlyRead[ocpp1_6::config::NumberOfConnectors] = true;
+        m_CfgOnlyRead[ocpp1_6::config::ResetRetries] = false;
+        m_CfgOnlyRead[ocpp1_6::config::StopTransactionOnEVSideDisconnect] = false;
+        m_CfgOnlyRead[ocpp1_6::config::StopTransactionOnInvalidId] = false;
+        m_CfgOnlyRead[ocpp1_6::config::StopTxnAlignedData] = false;
+        m_CfgOnlyRead[ocpp1_6::config::StopTxnAlignedDataMaxLength] = true;
+        m_CfgOnlyRead[ocpp1_6::config::StopTxnSampledData] = false;
+        m_CfgOnlyRead[ocpp1_6::config::StopTxnSampledDataMaxLength] = true;
+        m_CfgOnlyRead[ocpp1_6::config::SupportedFeatureProfiles] = true;
+        m_CfgOnlyRead[ocpp1_6::config::SupportedFeatureProfilesMaxLength] = true;
+        m_CfgOnlyRead[ocpp1_6::config::TransactionMessageAttempts] = false;
+        m_CfgOnlyRead[ocpp1_6::config::TransactionMessageRetryInterval] = false;
+        m_CfgOnlyRead[ocpp1_6::config::UnlockConnectorOnEVSideDisconnect] = false;
+        m_CfgOnlyRead[ocpp1_6::config::WebSocketPingInterval] = false;
+        m_CfgOnlyRead[ocpp1_6::config::LocalAuthListEnabled] = false;
+        m_CfgOnlyRead[ocpp1_6::config::LocalAuthListMaxLength] = true;
+        m_CfgOnlyRead[ocpp1_6::config::SendLocalListMaxLength] = true;
+        m_CfgOnlyRead[ocpp1_6::config::ReserveConnectorZeroSupported] = true;
+        // m_CfgOnlyRead[ocpp1_6::config::ChargeProfileMaxStackLevel] = true;
+        // m_CfgOnlyRead[ocpp1_6::config::ChargingScheduleAllowedChargingRateUnit] = true;
+        // m_CfgOnlyRead[ocpp1_6::config::ChargingScheduleMaxPeriods] = true;
+        // m_CfgOnlyRead[ocpp1_6::config::ConnectorSwitch3to1PhaseSupported] = true;
+        // m_CfgOnlyRead[ocpp1_6::config::MaxChargingProfilesInstalled] = true;
+
+        /* 拓展 配置 */
+        m_CfgOnlyRead[ocpp1_6::config::AdditionalRootCertificateCheck] = true;
+        m_CfgOnlyRead[ocpp1_6::config::AuthorizationKey] = false;
+        m_CfgOnlyRead[ocpp1_6::config::CertificateSignedMaxChainSize] = true;
+        m_CfgOnlyRead[ocpp1_6::config::CertificateStoreMaxLength] = true;
+        m_CfgOnlyRead[ocpp1_6::config::CpoName] = false;
+        m_CfgOnlyRead[ocpp1_6::config::SecurityProfile] = true;
+
+        /* Firmware and Diagnostics File Transfer */
+        m_CfgOnlyRead[ocpp1_6::config::SupportedFileTransferProtocols] = true;
+
+    }
+
     bool ConfigManager::loadConfig()
     {
         std::lock_guard<std::mutex> lock(m_mutex);
 
-        if (false == file_exist(m_default_cfgPath.c_str())) /* 默认配置不存在 */
+        if (false == file_exist(m_defaultCfgPath.c_str())) /* 默认配置不存在 */
         {
-            e_log("ocpp default config file not exist:%s", m_default_cfgPath.c_str());
-            if (false == createDefaultConfig(m_default_cfgPath))
+            e_log("ocpp default config file not exist:%s", m_defaultCfgPath.c_str());
+            if (false == createDefaultConfig(m_defaultCfgPath))
             {
                 /* 默认配置生成失败 */
                 e_log("create defaul config error");
@@ -131,31 +192,31 @@ namespace ocpp1_6
             }
         }
 
-        m_current_cfgPath = std::string (extract_directory(m_default_cfgPath.c_str())) + "/ocpp_cache_config.json";
-        d_log("cache config path:%s", m_current_cfgPath.c_str());
-        if (false == file_exist(m_current_cfgPath.c_str()))
+        m_currentCfgPath = std::string (extract_directory(m_defaultCfgPath.c_str())) + "/ocpp_cache_config.json";
+        d_log("cache config path:%s", m_currentCfgPath.c_str());
+        if (false == file_exist(m_currentCfgPath.c_str()))
         {
             /* cache 文件不存在，默认从default复制一份 */
-            if (false == file_copy(m_current_cfgPath.c_str(), m_default_cfgPath.c_str()))
+            if (false == file_copy(m_currentCfgPath.c_str(), m_defaultCfgPath.c_str()))
             {
-                e_log("copy default ocpp config failed dst:%s, src:%s", m_current_cfgPath.c_str(), m_default_cfgPath.c_str());
+                e_log("copy default ocpp config failed dst:%s, src:%s", m_currentCfgPath.c_str(), m_defaultCfgPath.c_str());
                 return false;
             }
         }
 
         /* 加载cache 配置 */
-        d_log("Loading configuration from: %s", m_current_cfgPath.c_str());
-        FILE *fp = fopen(m_current_cfgPath.c_str(), "rb");
+        d_log("Loading configuration from: %s", m_currentCfgPath.c_str());
+        FILE *fp = fopen(m_currentCfgPath.c_str(), "rb");
         if (nullptr == fp)
         {
-            e_log("Failed to open config file: %s", m_current_cfgPath.c_str());
+            e_log("Failed to open config file: %s", m_currentCfgPath.c_str());
             return false;
         }
         char readBuffer[MAX_BUF_LEN_KB]; // 64KB 缓冲区
         rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
-        if (m_cache_config.ParseStream(is).HasParseError())
+        if (m_cacheConfig.ParseStream(is).HasParseError())
         {
-            e_log("JSON parse error at offset %zu: %s", m_cache_config.GetErrorOffset(),GetParseError_En(m_cache_config.GetParseError()));
+            e_log("JSON parse error at offset %zu: %s", m_cacheConfig.GetErrorOffset(),GetParseError_En(m_cacheConfig.GetParseError()));
             fclose(fp);
             return false;
         }
@@ -225,6 +286,17 @@ namespace ocpp1_6
             // ocppConfig.AddMember(rapidjson::StringRef(ocpp1_6::config::ChargingScheduleMaxPeriods), 0, allocator);
             // ocppConfig.AddMember(rapidjson::StringRef(ocpp1_6::config::ConnectorSwitch3to1PhaseSupported), true, allocator);
             // ocppConfig.AddMember(rapidjson::StringRef(ocpp1_6::config::MaxChargingProfilesInstalled), 0, allocator);
+
+            /* 拓展安全配置项 */
+            // ocppConfig.AddMember(rapidjson::StringRef(ocpp1_6::config::AdditionalRootCertificateCheck), false, allocator);
+            ocppConfig.AddMember(rapidjson::StringRef(ocpp1_6::config::AuthorizationKey), "1234", allocator);
+            ocppConfig.AddMember(rapidjson::StringRef(ocpp1_6::config::CertificateSignedMaxChainSize), 10000, allocator);
+            ocppConfig.AddMember(rapidjson::StringRef(ocpp1_6::config::CertificateStoreMaxLength), 50, allocator);
+            ocppConfig.AddMember(rapidjson::StringRef(ocpp1_6::config::CpoName), "DeYe OCPP1_6", allocator);
+            ocppConfig.AddMember(rapidjson::StringRef(ocpp1_6::config::SecurityProfile), 1, allocator);
+
+            /* Firmware and Diagnostics File Transfer */
+            ocppConfig.AddMember(rapidjson::StringRef(ocpp1_6::config::SupportedFileTransferProtocols), "FTP,FTPS,HTTP,HTTPS", allocator);
             defaultConfig.AddMember("OCPP1_6", ocppConfig, allocator);
         }
 
@@ -315,7 +387,7 @@ namespace ocpp1_6
     bool ConfigManager::getConfig(const std::string &name, rapidjson::Value &value)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        rapidjson::Value *current = &m_cache_config;
+        rapidjson::Value *current = &m_cacheConfig;
         std::istringstream iss(name);
         std::string token;
 
@@ -335,33 +407,235 @@ namespace ocpp1_6
     bool ConfigManager::SetConfig(const std::string &name, const rapidjson::Value &value)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
+        rapidjson::Value oldCacheConfig;
+        oldCacheConfig.CopyFrom(m_cacheConfig, m_cacheConfig.GetAllocator());
+        std::istringstream iss(name);
+        std::string token;
+        std::vector<std::string> tokens;
+
+        while (std::getline(iss, token, '.'))
+        {
+            tokens.push_back(token);
+        }
+        if (true == tokens.empty())
+        {
+            e_log("tokens empty, error name:%s", name.c_str());
+            return false;
+        }
+
+        rapidjson::Value *current = &m_cacheConfig;
+        for (size_t i = 0; i < tokens.size() - 1; ++i)
+        {
+            const char *key = tokens[i].c_str();
+            if ((false == current->IsObject()) || (false == current->HasMember(key)))
+            {
+                e_log("Failed to set config: missing intermediate key '%s' in path '%s'", key, name.c_str());
+                return false;
+            }
+            current = &(*current)[key];
+        }
+        const char *finalKey = tokens.back().c_str();
+        if (false == current->IsObject())
+        {
+            e_log("Failed to set config: parent is not an object in path '%s'", name.c_str());
+            return false;
+        }
+
+        if(current->HasMember(finalKey))
+        {
+            current->RemoveMember(finalKey);
+        }
+
+        rapidjson::Value newValue;
+        newValue.CopyFrom(value, m_cacheConfig.GetAllocator());
+        current->AddMember(rapidjson::StringRef(finalKey), newValue, m_cacheConfig.GetAllocator());
+
+        if (false == saveCacheConfig());
+        {
+            e_log("save cache config failed");
+            return false;
+        }
+
+        std::vector<std::string> changeKeys;
+        findChangedKeys(oldCacheConfig, m_cacheConfig, "", changeKeys);
+
+        m_configActionLevel = evaluateConfigActionLevel(changeKeys);
+        switch (m_configActionLevel)
+        {
+        case ERROR_KEY:
+            e_log("error %u", m_configActionLevel);
+            break;
+        case IMMEDIATE:
+            d_log(" IMMEDIATE ");
+            break;
+        case RESETWEBSOCKET:
+            d_log(" RESETWEBSOCKET ");
+            break;
+        case RESETOCPP:
+            d_log(" RESETOCPP ");
+            break;
+        default:
+            e_log("error %u", m_configActionLevel);
+            break;
+        }
+
+
+        return true;
+    }
+
+    bool ConfigManager::saveCacheConfig()
+    {
+        std::ofstream ofs(m_currentCfgPath);
+        if (false == ofs.is_open())
+        {
+            e_log("Failed to open config file for writing: %s", m_currentCfgPath.c_str());
+            return false;
+        }
+        rapidjson::StringBuffer buffer;
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+        m_cacheConfig.Accept(writer);
+
+        ofs << buffer.GetString();
+        ofs.close();
     }
 
     void ConfigManager::findChangedKeys(const rapidjson::Value &oldVal, const rapidjson::Value &newVal, const std::string &path, std::vector<std::string> &changedKeys)
     {
+        if (oldVal.GetType() != newVal.GetType())
+        {
+            changedKeys.push_back(path);
+        }
 
+        if (newVal.IsObject())
+        {
+            /* new有 old无 */
+            for (auto it = newVal.MemberBegin(); it != newVal.MemberEnd(); it++)
+            {
+                const char *key = it->name.GetString();
+                std::string childPath = path.empty() ? key : path + "." + key;
+
+                if (false == oldVal.HasMember(key))
+                {
+                    changedKeys.push_back(childPath);
+                }
+                else
+                {
+                    findChangedKeys(oldVal[key], it->value, childPath, changedKeys);
+                }
+            }
+
+            /* new无 old有 */
+            for (auto it = oldVal.MemberBegin(); it != oldVal.MemberEnd(); ++it)
+            {
+                const char* key = it->name.GetString();
+                if (!newVal.HasMember(key))
+                {
+                    std::string childPath = path.empty() ? std::string(key) : (path + "." + key);
+                    changedKeys.push_back(childPath);
+                }
+            }
+        }
+        else if (newVal.IsArray())
+        {
+            if (!oldVal.IsArray())
+            {
+                changedKeys.push_back(path);
+                return;
+            }
+
+            size_t newSize = newVal.Size();
+            size_t oldSize = oldVal.Size();
+            size_t miniSize = (newSize > oldSize) ? newSize : oldSize;
+
+            /* 比较公共部分 */
+            for (size_t i = 0; i < miniSize; i++)
+            {
+                std::string childPath = path + "[" + std::to_string(i) + "]";
+                findChangedKeys(oldVal[i], newVal[i], childPath, changedKeys);
+            }
+
+            /* 整个数据不相等，是同变化 */
+            if (newSize != oldSize)
+            {
+                changedKeys.push_back(path);
+            }
+        }
+        else /* 基本类型 null bool number string */
+        {
+            bool equal = false;
+            switch (newVal.GetType())
+            {
+            case rapidjson::kNullType:
+                equal = (rapidjson::kNullType == oldVal.GetType()) ? true : false;
+                break;
+
+            case rapidjson::kTrueType:
+            case rapidjson::kFalseType:
+                equal = (oldVal.GetBool() == newVal.GetBool());
+                break;
+
+            case rapidjson::kNumberType:
+            {
+                /* 注意：RapidJSON 不区分 int/float，需根据实际存储方式比较 */
+                if (oldVal.IsDouble() || newVal.IsDouble())
+                {
+                    equal = (oldVal.GetDouble() == newVal.GetDouble());
+                }
+                else if (oldVal.IsInt64() || newVal.IsInt64())
+                {
+                    equal = (oldVal.GetInt64() == newVal.GetInt64());
+                }
+                else
+                {
+                    equal = (oldVal.GetInt() == newVal.GetInt());
+                }
+                break;
+            }
+
+            case rapidjson::kStringType:
+                equal = (strcmp(oldVal.GetString(), newVal.GetString()) == 0);
+                break;
+
+            default:
+                equal = false;
+            }
+            if (false == equal)
+            {
+                changedKeys.push_back(path);
+            }
+        }
     }
 
-    ActionLevel_e ConfigManager::evaluateConfigActionLevel(const std::string& key)
+    ActionLevel_e ConfigManager::evaluateConfigActionLevel(const std::vector<std::string>& keys)
     {
-        i_log("changed keys:%s", key.c_str());
-        if (m_restartOcppKeys.find(key) != m_restartOcppKeys.end())
+        bool needRestartOcpp = false;
+        bool needReconnect = false;
+        bool allRecognized = true;
+
+        for (const auto key : keys)
         {
-            return RESETOCPP;
-        }
-        else if (m_restartWebSocketKeys.find(key) != m_restartWebSocketKeys.end())
-        {
-            return RESETWEBSOCKET;
-        }
-        else if (m_immediateEffectKeys.find(key) != m_immediateEffectKeys.end())
-        {
-            return IMMEDIATE;
-        }
-        else
-        {
-            e_log("Unknown config key for action: %s", key.c_str());
-            return ERROR_KEY;
+            if (m_restartOcppKeys.count(key))
+            {
+                return RESETOCPP;
+            }
+            else if (m_restartWebSocketKeys.count(key))
+            {
+                return RESETWEBSOCKET;
+            }
+            else if (m_immediateEffectKeys.count(key))
+            {
+                return IMMEDIATE;
+            }
+            else
+            {
+                e_log("Unknown config key for action: %s", key.c_str());
+                return ERROR_KEY;
+            }
         }
     }
 
+    bool ConfigManager::isReadOnly(const std::string& key, bool& bread)
+    {
+
+    }
 }
