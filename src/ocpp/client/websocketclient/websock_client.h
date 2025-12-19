@@ -7,7 +7,7 @@
     创建 lws_context
     启动 m_thread → 运行 process()
 process() 线程循环
-    while (!m_end) {
+    while (!m_processEnd) {
         lws_service(m_context, 10); // 处理事件
         // 可能检查重连、ping 等
     }
@@ -85,7 +85,7 @@ namespace ocpp1_6
 
             IListener* m_listener;
             std::thread *m_thread;
-            bool m_end; /* 标志位，指示是否结束当前操作，如网络连接或线程运行 */
+            bool m_processEnd; /* 标志位，指示是否结束当前操作，如网络连接或线程运行 */
 
             uint32_t m_retry_interval_ms;
             uint16_t m_ping_interval_s;
@@ -94,16 +94,18 @@ namespace ocpp1_6
 
             Url m_url;
 
-            std::string m_protocol;
+            std::string m_protocol; /* web实例使用的协议 由外部调用者传入 */
             auth::Credentials m_credentials;
 
             bool m_connected;
             struct lws_context* m_context; /* LWS 上下文（全局）管理所有连接、定时器、日志等 */
             lws_log_cx_t m_log_context;
-            lws_sorted_usec_list_t m_sched_list;
+            lws_sorted_usec_list_t m_sched_list; /* 用于lws_sul_schedule调度 用户定义的 SUL 结构体 */
 
             struct lws* m_wsi; /* WebSocket 实例（per-connection） 代表当前 WebSocket 连接 */
+            static const struct lws_protocols m_protocols[]; /* 静态成员变量 websocket协议数组 具体协议的实现方式 */
             lws_retry_bo m_retry_policy;
+            std::array<uint32_t, 4> m_retry_delay_table{1000, 1000, 1000, 5000};
             uint16_t m_retry_count;
 
             ocpp::common::Queue<SendMsg*> m_queue;
@@ -120,8 +122,8 @@ namespace ocpp1_6
             void appendFragmentedDate(const void* data, size_t size);
             void releaseFragmentedFrame();
 
-            static void connectcb(struct lws_sorted_usec_list* sul) noexcept;
-            static int eventcb(struct lws* wsi, enum lws_callback_reasons reasons, void *user, void *in, size_t len) noexcept;
+            static void connectcb(struct lws_sorted_usec_list* sul) noexcept; /* 真正的websocket 连接函数 由lws_sul_schedule调度 */
+            static int eventcb(struct lws* wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len) noexcept;
         };
     } // namespace client
 
