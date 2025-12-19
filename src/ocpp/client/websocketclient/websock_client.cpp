@@ -41,7 +41,7 @@ int32_t web_socket_client_test(void)
     TestListener listener;
     client.registerListener(&listener);
     // std::string url = "ws://172.30.1.55:8180/steve/websocket/ChargeBox1";
-    std::string url = "ws://172.30.1.55:8080/steve/websocket/CentralSystemService/ChargeBox1";
+    std::string url = "ws://192.168.18.128:8080/steve/websocket/CentralSystemService/ChargeBox1";
     std::string protocol = "ocpp1.6";
     ocpp1_6::auth::Credentials credentials;
     credentials.user = "ChargeBox1";
@@ -114,7 +114,6 @@ ocpp1_6::client::WebSocketClient::WebSocketClient()
     d_log("websocketclient() client");
 }
 
-
 ocpp1_6::client::WebSocketClient::~WebSocketClient()
 {
     d_log("~Websocketclient()");
@@ -149,8 +148,9 @@ bool ocpp1_6::client::WebSocketClient::Connect(const std::string &url,
         if (m_url.isValid() && (("ws" == m_url.getProtocol()) || ("wss" == m_url.getProtocol())))
         {
             memset(&m_log_context, 0, sizeof(m_log_context));
-            m_log_context.u.emit = lwsl_emit_stderr;
-            m_log_context.lll_flags = (LLL_ERR | LLL_WARN | LLL_NOTICE);
+            // m_log_context.u.emit = lwsl_emit_stderr; /* lwsl_emit_stderr 是 LWS 内置的日志输出函数，它会把日志打印到标准错误（stderr）。 */
+            // m_log_context.u.emit = my_log_emit; /* 替换日志 */
+            // m_log_context.lll_flags = (LLL_ERR | LLL_WARN | LLL_NOTICE);
 
             static const struct lws_protocols protocols[] =
             {

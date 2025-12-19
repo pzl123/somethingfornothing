@@ -1,10 +1,32 @@
-#ifndef WEBSOCK_CLIENT
-#define WEBSOCK_CLIENT
+#ifndef WEBSOCK_CLIENT_H
+#define WEBSOCK_CLIENT_H
 
+/*
+调用 Connect()
+    解析 URL → 设置 m_url, m_protocol, m_credentials
+    创建 lws_context
+    启动 m_thread → 运行 process()
+process() 线程循环
+    while (!m_end) {
+        lws_service(m_context, 10); // 处理事件
+        // 可能检查重连、ping 等
+    }
+
+LWS 触发 eventcb
+    LWS_CALLBACK_CLIENT_ESTABLISHED → m_connected = true; 通知 wsClientConnected()
+    LWS_CALLBACK_RECEIVE → 拼接分片帧 → 完整后调用 wsClientDataReceived()
+    LWS_CALLBACK_CLIENT_WRITEABLE → 从 m_queue 取消息发送
+发送数据
+    外部调用 send() → 入队 SendMsg*
+    LWS 在 WRITEABLE 回调中出队并 lws_write()
+断开/重连
+    网络错误 → 通知 wsClientFailed()
+    启动重连定时器（connectcb）
+ */
 
 #include "websocket/libwebsockets.h"
 #include "ocpp/credentials/credentials.h"
-#include "tool/url/Url.h"
+#include "ocpp/tool/url/Url.h"
 #include "ocpp/credentials/credentials.h"
 #include "ocpp/common/Queue.h"
 
@@ -33,14 +55,10 @@ namespace ocpp1_6
             bool disConnect();
             bool isConnect();
             bool send(const void* data, uint64_t size);
-            bool recv();
-
-            class IListener;
-            void registerListener(IListener *listener);
 
             class IListener
             {
-            public:
+                public:
                 virtual ~IListener() {}
 
                 virtual void wsClientConnected() = 0;
@@ -49,6 +67,8 @@ namespace ocpp1_6
                 virtual void wsClientError() = 0;
                 virtual void wsClientDataReceived(const void *data, uint64_t size) = 0;
             };
+            void registerListener(IListener *listener);
+
         private:
             struct SendMsg
             {
@@ -65,7 +85,7 @@ namespace ocpp1_6
 
             IListener* m_listener;
             std::thread *m_thread;
-            bool m_end;
+            bool m_end; /* 标志位，指示是否结束当前操作，如网络连接或线程运行 */
 
             uint32_t m_retry_interval_ms;
             uint16_t m_ping_interval_s;
@@ -78,11 +98,11 @@ namespace ocpp1_6
             auth::Credentials m_credentials;
 
             bool m_connected;
-            struct lws_context* m_context;
+            struct lws_context* m_context; /* LWS 上下文（全局）管理所有连接、定时器、日志等 */
             lws_log_cx_t m_log_context;
             lws_sorted_usec_list_t m_sched_list;
 
-            struct lws* m_wsi;
+            struct lws* m_wsi; /* WebSocket 实例（per-connection） 代表当前 WebSocket 连接 */
             lws_retry_bo m_retry_policy;
             uint16_t m_retry_count;
 
@@ -110,4 +130,4 @@ namespace ocpp1_6
 
 int32_t web_socket_client_test(void);
 
-#endif /* WEBSOCK_CLIENT */
+#endif /* WEBSOCK_CLIENT_H */
