@@ -41,6 +41,7 @@ target_link_libraries(${EXECUTABLE_NAME}
         ${OPENSSL_LIBRARIES}
         ${LIB_PATH}/libfcgi.a
         ${LIB_PATH}/libcjsonx.a
+        uuid
         pthread
         dl
 )
