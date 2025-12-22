@@ -52,7 +52,7 @@ namespace ocpp1_6
                          std::chrono::milliseconds retry_interval = std::chrono::milliseconds(5000),
                          std::chrono::milliseconds ping_interval = std::chrono::milliseconds(5000));
 
-            bool disConnect();
+            bool disConnect(bool clearMsgFlag);
             bool isConnect();
             bool send(const void* data, uint64_t size);
 

@@ -48,6 +48,9 @@ uint64_t gettime_msec(void);
  */
 int32_t make_dir_recursive(const char *path);
 
+
+int32_t core_dump_file(bool enable);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

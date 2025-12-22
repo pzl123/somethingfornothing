@@ -14,6 +14,8 @@
 #include <memory>
 #include <condition_variable>
 #include <chrono>
+#include <cstdint>
+#include <pthread.h>
 #include "utils/utils.h"
 
 class ThreadPool
@@ -24,10 +26,10 @@ public:
                std::chrono::seconds idleTimeout = std::chrono::seconds(60))
                :m_coreThreads(coreThreads),
                m_maxThreads(maxThreads),
-               m_idleTimeout(idleTimeout),
-               m_isForceStopping(false),
-               m_isStopping(false),
                m_currentThreads(0),
+               m_idleTimeout(idleTimeout),
+               m_isStopping(false),
+               m_isForceStopping(false),
                m_activeThreads(0)
     {
         if (m_coreThreads == 0 || m_maxThreads < m_coreThreads)
@@ -35,7 +37,7 @@ public:
             d_log("error num thread");
         }
 
-        for (int i = 0; i < m_coreThreads; i++)
+        for (uint i = 0; i < m_coreThreads; i++)
         {
             createWorkThread();
         }
@@ -287,8 +289,17 @@ private:
 
     void createWorkThread()
     {
+        static std::atomic<int> s_workerCounter{0};
+        int id = ++s_workerCounter;
+        std::thread t([this, id]()
+                      {
+        // 设置线程名（最多 15 个字符 + '\0'）
+        char threadName[16];
+        snprintf(threadName, sizeof(threadName), "Worker-%d", id);
+        pthread_setname_np(pthread_self(), threadName);
+
+        this->workloop(); });
         // d_log("Creating new worker thread...");
-        std::thread t(&ThreadPool::workloop, this);
         std::thread::id tid = t.get_id();
         {
             std::lock_guard<std::mutex> lock(m_queueMutex);

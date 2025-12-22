@@ -9,6 +9,7 @@
 #include <pthread.h>
 #include <stdint.h>
 #include <sys/stat.h>
+#include <sys/resource.h>
 
 #include "hv/hbase.h"
 
@@ -25,6 +26,8 @@ typedef enum
 #ifndef LOG_LEVEL
 #define LOG_LEVEL DEFAULT_LEVEL  // 默认级别为 0
 #endif
+
+#define CORE_DUMP_FILE_PATH "/home/zlgmcu/project/learnC++/bin/debug/"
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -178,4 +181,39 @@ int32_t make_dir_recursive(const char *path)
     }
 
     return -2;
+}
+
+int32_t core_dump_file(bool enable)
+{
+    char cmd[SYS_CMD_MAX_LEN] = {0};
+    /* core-程序名-进程id-时间戳 */
+    if (enable)
+    {
+#ifdef NDEBUG
+        return 0;
+#endif
+        (void)snprintf(cmd, SYS_CMD_MAX_LEN, "echo %s/core-%%e-%%p-%%t > /proc/sys/kernel/core_pattern", CORE_DUMP_FILE_PATH);
+    }
+    else
+    {
+        (void)snprintf(cmd, SYS_CMD_MAX_LEN, "%s", "echo > /proc/sys/kernel/core_pattern");
+    }
+
+    int32_t ret = system(cmd);
+    if (ret != 0)
+    {
+        e_log("system cmd: %s error!", cmd);
+        return -1;
+    }
+
+    struct rlimit rlim = {0};
+    rlim.rlim_cur = RLIM_INFINITY;
+    rlim.rlim_max = RLIM_INFINITY;
+    if (setrlimit(RLIMIT_CORE, &rlim) != 0)
+    {
+        e_log("setrlimit error!\n");
+        return -1;
+    }
+
+    return 0;
 }

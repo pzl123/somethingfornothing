@@ -63,7 +63,7 @@ int32_t web_socket_client_test(void)
         for (int i = 0; i < 10; i++)
         {
             sleep(10);
-            client.disConnect();
+            client.disConnect(false);
             sleep(10);
             client.Connect(url, protocol, credentials, connect_timeout);
         }
@@ -133,7 +133,7 @@ ocpp1_6::client::WebSocketClient::WebSocketClient()
 ocpp1_6::client::WebSocketClient::~WebSocketClient()
 {
     d_log("~Websocketclient()");
-    disConnect();
+    disConnect(true);
     releaseFragmentedFrame();
 }
 
@@ -204,7 +204,7 @@ bool ocpp1_6::client::WebSocketClient::Connect(const std::string &url,
     }
 }
 
-bool ocpp1_6::client::WebSocketClient::disConnect()
+bool ocpp1_6::client::WebSocketClient::disConnect(bool clearMsgFlag)
 {
     bool ret = false;
 
@@ -212,16 +212,19 @@ bool ocpp1_6::client::WebSocketClient::disConnect()
     {
         m_processEnd = true;
         m_retry_count = 0; /* 主动断开 清零重连计数器 */
-        SendMsg *msg;
-        while (m_queue.pop(msg, 0))
+        if (true == clearMsgFlag) /* 清空消息缓存 */
         {
-            if (nullptr != msg)
+            SendMsg *msg;
+            while (m_queue.pop(msg, 0))
             {
-                delete msg;
+                if (nullptr != msg)
+                {
+                    delete msg;
+                }
             }
         }
 
-        lws_cancel_service(m_context);
+        lws_cancel_service(m_context); /* 通知主线程 */
 
         if (std::this_thread::get_id() != m_thread->get_id())
         {
@@ -235,6 +238,12 @@ bool ocpp1_6::client::WebSocketClient::disConnect()
         delete m_thread;
         m_thread = nullptr;
         m_connected = false;
+
+        if (nullptr != m_context)
+        {
+            lws_context_destroy(m_context);
+            m_context = nullptr;
+        }
         ret = true;
     }
     return ret;
@@ -247,14 +256,24 @@ bool ocpp1_6::client::WebSocketClient::isConnect()
 
 bool ocpp1_6::client::WebSocketClient::send(const void *data, uint64_t size)
 {
-    bool ret = false;
-    if (m_connected)
+    if ((nullptr == data) || (size == 0))
     {
-        SendMsg *msg = new SendMsg(data, size);
-        ret = m_queue.push(msg);
-        lws_cancel_service(m_context); /* 请立刻停止等待，我要关了 */
+        e_log("api error");
+        return false;
     }
-    return ret;
+
+    SendMsg* msg = new SendMsg(data, size);
+    if (!m_queue.push(msg))
+    {
+        delete msg;
+        return false;
+    }
+
+    if ((true == m_connected) && (nullptr != m_wsi))
+    {
+        lws_callback_on_writable(m_wsi);
+    }
+    return true;
 }
 
 void ocpp1_6::client::WebSocketClient::registerListener(IListener *listener)
@@ -291,15 +310,11 @@ void ocpp1_6::client::WebSocketClient::process()
         // }
     }
     d_log("WebSocketClient::process exiting...");
-    if (!m_processEnd)
+    if (true == m_processEnd)
     {
         e_log("WebSocketClient::process: disconnect");
-        disConnect();
+        disConnect(true);
         m_listener->wsClientError();
-    }
-    if (nullptr != m_context)
-    {
-        lws_context_destroy(m_context);
     }
     d_log("WebSocketClient::process end");
 }
@@ -502,7 +517,16 @@ int ocpp1_6::client::WebSocketClient::eventcb(struct lws *wsi, enum lws_callback
             d_log("WebSocketClient: Connection established");
             self_client->m_retry_count = 0; /* 连接建立成功, 清理重连计数 */
             self_client->m_connected = true;
-            self_client->m_listener->wsClientConnected();
+            self_client->m_connection_error_notified = false;
+
+            if (nullptr != self_client->m_listener)
+            {
+                self_client->m_listener->wsClientConnected();
+            }
+            if ((false == self_client->m_queue.empty()) && (nullptr != self_client->m_wsi))
+            {
+                lws_callback_on_writable(self_client->m_wsi);
+            }
             break;
         }
 
@@ -542,23 +566,26 @@ int ocpp1_6::client::WebSocketClient::eventcb(struct lws *wsi, enum lws_callback
         case LWS_CALLBACK_CLIENT_WRITEABLE:
         {
             // d_log("WebSocketClient: Writeable");
-            bool error = false;
             SendMsg *msg = nullptr;
             // 发送消息队列中的消息
-            while (self_client->m_queue.pop(msg, 0) && !error)
+            while (self_client->m_queue.pop(msg, 0) && (nullptr != msg))
             {
-                if (lws_write(wsi, msg->payload, msg->size, LWS_WRITE_TEXT) < static_cast<int>(msg->size))
+                // 注意：payload 已包含 LWS_PRE 偏移
+                int sent = lws_write(wsi, msg->payload, msg->size, LWS_WRITE_BINARY);
+                delete[] msg->data; // data 是 new unsigned char[LWS_PRE + size]
+                delete msg;
+
+                if (sent < 0 || (size_t)sent != msg->size)
                 {
-                    error = true;
+                    e_log("lws_write failed: %d", sent);
+                    return -1;
                 }
-                if (msg != nullptr)
+
+                if (false == self_client->m_queue.empty())
                 {
-                    delete msg;
+                    lws_callback_on_writable(wsi); // 请求下一次 writable 回调
+                    break;                         // 避免长时间占用回调（LWS 要求快速返回）
                 }
-            }
-            if (error)
-            {
-                return -1;
             }
             break;
         }

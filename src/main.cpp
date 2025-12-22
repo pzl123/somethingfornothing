@@ -50,6 +50,7 @@ static void my_log_emit(int level, const char *line)
 
 int main(void)
 {
+    core_dump_file(true);
     lws_set_log_level(LLL_ERR | LLL_WARN | LLL_NOTICE, my_log_emit); /* 设置websocket全局日志信息 */
     web_socket_client_test();
     return 0;
