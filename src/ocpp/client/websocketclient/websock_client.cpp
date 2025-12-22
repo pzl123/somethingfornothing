@@ -5,9 +5,10 @@
 #include <iostream>
 
 const struct lws_protocols ocpp1_6::client::WebSocketClient::m_protocols[] =
-    {
-        {"WebSocketClient", &ocpp1_6::client::WebSocketClient::eventcb, sizeof(ocpp1_6::client::WebSocketClient *), 0, 0, nullptr, 0},
-        {nullptr, nullptr, 0, 0, 0, nullptr, 0}};
+{
+    {"WebSocketClient", &ocpp1_6::client::WebSocketClient::eventcb, sizeof(ocpp1_6::client::WebSocketClient *), 0, 0, nullptr, 0},
+    {nullptr, nullptr, 0, 0, 0, nullptr, 0}
+};
 
 int32_t web_socket_client_test(void)
 {
@@ -59,7 +60,13 @@ int32_t web_socket_client_test(void)
 
     while (1)
     {
-        sleep(1);
+        for (int i = 0; i < 10; i++)
+        {
+            sleep(10);
+            client.disConnect();
+            sleep(10);
+            client.Connect(url, protocol, credentials, connect_timeout);
+        }
     }
     return 0;
 }
@@ -113,13 +120,14 @@ ocpp1_6::client::WebSocketClient::WebSocketClient()
 {
     // d_log("websocketclient() client");
     m_retry_policy =
-        {
-            .retry_ms_table = m_retry_delay_table.data(),
-            .retry_ms_table_count = 4,
-            .conceal_count = 0,
-            .secs_since_valid_ping = m_ping_interval_s,
-            .secs_since_valid_hangup = static_cast<uint16_t>(2U * m_ping_interval_s),
-            .jitter_percent = 20};
+    {
+        .retry_ms_table = m_retry_delay_table.data(),
+        .retry_ms_table_count = 4,
+        .conceal_count = 0,
+        .secs_since_valid_ping = m_ping_interval_s,
+        .secs_since_valid_hangup = static_cast<uint16_t>(2U * m_ping_interval_s),
+        .jitter_percent = 20
+    };
 }
 
 ocpp1_6::client::WebSocketClient::~WebSocketClient()
@@ -167,7 +175,6 @@ bool ocpp1_6::client::WebSocketClient::Connect(const std::string &url,
             info.protocols = m_protocols;
             info.timeout_secs = static_cast<unsigned int>(std::chrono::duration_cast<std::chrono::seconds>(connect_timeout).count());
             info.connect_timeout_secs = static_cast<unsigned int>(std::chrono::duration_cast<std::chrono::seconds>(connect_timeout).count());
-            // info.log_cx = &m_log_context;
 
             m_credentials = credentials;
 
