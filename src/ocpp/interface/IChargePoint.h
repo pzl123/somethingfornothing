@@ -2,11 +2,11 @@
 #define OPENOCPP_ICHARGEPOINT_H
 
 
-#include "ocpp/credentials/credentials.h"
+#include "ocpp/interface/credentials.h"
 #include "ocpp/interface/IChargePointHandler.h"
-#include "ocpp/type/OcppStatus.h"
-#include "ocpp/type/ChargePointErrorCode.h"
-#include "ocpp/type/Reason.h"
+#include "ocpp/interface/type/OcppStatus.h"
+#include "ocpp/interface/type/ChargePointErrorCode.h"
+#include "ocpp/interface/type/Reason.h"
 #include <memory>
 
 namespace ocpp1_6

@@ -8,7 +8,7 @@
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
 
-#include "ocpp/credentials/credentials.h"
+#include "ocpp/interface/credentials.h"
 #include "ocpp/client/websocketclient/websock_client.h"
 #include "ocpp/tool/threadpool/ThreadPool.h"
 #include "ocpp/config/configManager.h"

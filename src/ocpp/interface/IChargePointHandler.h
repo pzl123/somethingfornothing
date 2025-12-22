@@ -11,7 +11,7 @@
 
 #include "rapidjson/document.h"
 
-#include "ocpp/type/OcppStatus.h"
+#include "ocpp/interface/type/OcppStatus.h"
 #include "ocpp/common/Common.h"
 #include <string>
 #include <ctime>

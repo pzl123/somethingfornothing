@@ -11,7 +11,7 @@
 
 #include "rapidjson/document.h"
 
-#include "ocpp/credentials/credentials.h"
+#include "ocpp/interface/credentials.h"
 #include "ocpp/config/configManager.h"
 #include "ocpp/interface/IChargePoint.h"
 

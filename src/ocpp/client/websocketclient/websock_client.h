@@ -25,9 +25,9 @@ LWS 触发 eventcb
  */
 
 #include "websocket/libwebsockets.h"
-#include "ocpp/credentials/credentials.h"
+#include "ocpp/interface/credentials.h"
 #include "ocpp/tool/url/Url.h"
-#include "ocpp/credentials/credentials.h"
+#include "ocpp/interface/credentials.h"
 #include "ocpp/common/Queue.h"
 
 #include <stdint.h>
