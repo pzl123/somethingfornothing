@@ -39,6 +39,16 @@ namespace ocpp1_6
 {
     namespace client
     {
+        class WebSocketClient;
+        struct websocketMember
+        {
+            struct lws_context* m_context; /* LWS 上下文（全局）管理所有连接、定时器、日志等 */
+            lws_log_cx_t m_log_context;
+            lws_sorted_usec_list_t m_sul; /* 用于lws_sul_schedule调度 */
+            struct lws* m_wsi; /* WebSocket 实例（per-connection） 代表当前 WebSocket 连接 */
+            WebSocketClient *m_self; /* 反向指针 */
+        };
+
         class WebSocketClient
         {
         public:
@@ -83,31 +93,24 @@ namespace ocpp1_6
                 }
             };
 
+            struct websocketMember m_websocketMember;
+
             IListener* m_listener;
             std::thread *m_thread;
             bool m_processEnd; /* 标志位，指示是否结束当前操作，如网络连接或线程运行 */
 
-            uint32_t m_retry_interval_ms; /* TCP Keep-Alive 探测间隔 */
-            uint16_t m_ping_interval_s; /*  */
-
+            uint32_t m_retry_interval_ms;
+            uint16_t m_ping_interval_s;
             bool m_connection_error_notified;
 
             Url m_url;
 
             std::string m_protocol; /* web实例使用的协议 由外部调用者传入 */
             auth::Credentials m_credentials;
-
-            bool m_connected;
-            struct lws_context* m_context; /* LWS 上下文（全局）管理所有连接、定时器、日志等 */
-            lws_log_cx_t m_log_context;
-            lws_sorted_usec_list_t m_sul; /* 用于lws_sul_schedule调度 */
-
-            struct lws* m_wsi; /* WebSocket 实例（per-connection） 代表当前 WebSocket 连接 */
             static const struct lws_protocols m_protocols[]; /* 静态成员变量 websocket协议数组 具体协议的实现方式 */
-            lws_retry_bo m_retry_policy;
-            std::array<uint32_t, 4> m_retry_delay_table{1000, 1000, 1000, 5000};
             uint16_t m_retry_count;
 
+            bool m_connected;
             ocpp::common::Queue<SendMsg*> m_queue;
 
             uint8_t* m_fragmented_frame;

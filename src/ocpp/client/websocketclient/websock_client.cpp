@@ -76,7 +76,8 @@ int32_t web_socket_client_test(void)
 
 
 ocpp1_6::client::WebSocketClient::WebSocketClient()
-    : m_listener(nullptr),
+    : m_websocketMember(),
+      m_listener(nullptr),
       m_thread(nullptr),
       m_processEnd(false),
       m_retry_interval_ms(0),
@@ -86,18 +87,13 @@ ocpp1_6::client::WebSocketClient::WebSocketClient()
       m_protocol(""),
       m_credentials(),
       m_connected(false),
-      m_context(nullptr),
-      m_log_context(),
-      m_sul(),
-      m_wsi(),
-      m_retry_policy(),
-      m_retry_count(0),
       m_queue(),
       m_fragmented_frame(nullptr),
       m_fragmented_frame_size(0),
       m_fragmented_frame_index(0)
 {
     // d_log("websocketclient() client");
+    m_websocketMember.m_self = this;
 }
 
 ocpp1_6::client::WebSocketClient::~WebSocketClient()
@@ -156,8 +152,8 @@ bool ocpp1_6::client::WebSocketClient::Connect(const std::string &url,
                 setupSSLInfo(&info);
             }
 
-            m_context = lws_create_context(&info);
-            if (nullptr != m_context)
+            m_websocketMember.m_context = lws_create_context(&info);
+            if (nullptr != m_websocketMember.m_context)
             {
                 m_processEnd = false;
                 m_connection_error_notified = false;
@@ -166,16 +162,10 @@ bool ocpp1_6::client::WebSocketClient::Connect(const std::string &url,
                 m_retry_interval_ms = static_cast<uint32_t>(retry_interval.count());
                 m_ping_interval_s = static_cast<uint16_t>(std::chrono::duration_cast<std::chrono::seconds>(ping_interval).count());
                 d_log("m_retry_interval_ms:%u, m_ping_interval_s:%u",m_retry_interval_ms, m_ping_interval_s);
-                m_retry_policy.retry_ms_table = m_retry_delay_table.data();
-                m_retry_policy.retry_ms_table_count = 4;
-                m_retry_policy.conceal_count = 0;
-                m_retry_policy.secs_since_valid_ping = m_ping_interval_s;
-                m_retry_policy.secs_since_valid_hangup = static_cast<uint16_t>(2U * m_ping_interval_s);
-                m_retry_policy.jitter_percent = 20;
                 m_protocol = protocol;
                 // memset(&m_sul, 0, sizeof(m_sul));
                 m_thread = new std::thread(std::bind(&WebSocketClient::process, this));       /* 启动处理线程 */
-                lws_sul_schedule(m_context, 0, &m_sul, WebSocketClient::connectcb, 1); /* 首次秒连，连接失败后5s重连 添加延迟连接 加 重连机制 1000 µs = 1ms*/
+                lws_sul_schedule(m_websocketMember.m_context, 0, &m_websocketMember.m_sul, WebSocketClient::connectcb, 1); /* 首次秒连，连接失败后5s重连 添加延迟连接 加 重连机制 1000 µs = 1ms*/
                 ret = true;
             }
         }
@@ -190,7 +180,7 @@ void ocpp1_6::client::WebSocketClient::process()
     int service_ret = 0;
     while ((false == m_processEnd))
     {
-        service_ret = lws_service(m_context, 10);
+        service_ret = lws_service(m_websocketMember.m_context, 10);
         if (0 > service_ret)
         {
             e_log("lws_service() returned error: %d. Terminating WebSocket context.", service_ret);
@@ -219,7 +209,8 @@ void ocpp1_6::client::WebSocketClient::process()
 
 void ocpp1_6::client::WebSocketClient::connectcb(struct lws_sorted_usec_list *sul)
 {
-    WebSocketClient *self_client = lws_container_of(sul, WebSocketClient, m_sul);
+    websocketMember *self = lws_container_of(sul, websocketMember, m_sul);
+    WebSocketClient *self_client = self->m_self;
 
     if ((nullptr == self_client) || (true == self_client->m_processEnd))
     {
@@ -231,7 +222,7 @@ void ocpp1_6::client::WebSocketClient::connectcb(struct lws_sorted_usec_list *su
     struct lws_client_connect_info i;
     (void)memset(&i, 0, sizeof(i));
     d_log("%s: connecting", __func__);
-    i.context = self_client->m_context;
+    i.context = self_client->m_websocketMember.m_context;
     i.address = self_client->m_url.getHost().c_str();
     i.path = self_client->m_url.getPath().c_str();
     i.host = i.address;
@@ -273,22 +264,23 @@ void ocpp1_6::client::WebSocketClient::connectcb(struct lws_sorted_usec_list *su
     // 设置协议、本地协议名称、websocket实例指针、重试策略和用户数据
     i.protocol = self_client->m_protocol.c_str();
     i.local_protocol_name = "WebSocketClient";
-    i.retry_and_idle_policy = &self_client->m_retry_policy;
-    i.pwsi = &self_client->m_wsi; /* 用于同步获取 wsi 句柄 输出：保存 wsi 到成员 */
+    i.pwsi = &self_client->m_websocketMember.m_wsi; /* 用于同步获取 wsi 句柄 输出：保存 wsi 到成员 */
     i.userdata = self_client;     /* 传递本实例, 之后可以在eventcb中使用本实例的成员变量 用于 eventcb 中获取 this 输入：绑定 this 到 wsi*/
     // i.opaque_user_data = self_client;
 
     // 尝试建立websocket连接，如果失败则根据重试策略重新安排连接尝试
     if (!lws_client_connect_via_info(&i))
     {
-        d_log("%s : Scheduling reconnect, attempt %d", __func__, self_client->m_retry_count);
-        lws_retry_sul_schedule(self_client->m_context, 0, sul, &self_client->m_retry_policy, WebSocketClient::connectcb, &self_client->m_retry_count); /* 重连机制 */
+        d_log("%s : Scheduling reconnect, attempt times: %u", __func__, self_client->m_retry_count);
+        // lws_retry_sul_schedule(self_client->m_context, 0, sul, &self_client->m_retry_policy, WebSocketClient::connectcb, &self_client->m_retry_count); /* 重连机制 */
+        self_client->m_retry_count++;
+        lws_sul_schedule(self_client->m_websocketMember.m_context, 0, &self_client->m_websocketMember.m_sul, WebSocketClient::connectcb, static_cast<lws_usec_t>(self_client->m_retry_interval_ms) * 1000);
     }
 }
 
 int ocpp1_6::client::WebSocketClient::eventcb(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len) noexcept
 {
-    int ret = 0;
+    bool retry = false;
     WebSocketClient *self_client = nullptr;
     if (nullptr != user)
     {
@@ -305,7 +297,7 @@ int ocpp1_6::client::WebSocketClient::eventcb(struct lws *wsi, enum lws_callback
         {
             if ((!self_client->m_processEnd) && (!self_client->m_queue.empty()))
             {
-                lws_callback_on_writable(self_client->m_wsi);
+                lws_callback_on_writable(self_client->m_websocketMember.m_wsi);
             }
         }
         break;
@@ -328,15 +320,9 @@ int ocpp1_6::client::WebSocketClient::eventcb(struct lws *wsi, enum lws_callback
 
             d_log("self_client->m_retry_interval_ms:%u", self_client->m_retry_interval_ms);
             // 判断是否需要重连
-            if (nullptr != self_client->m_context)
+            if (nullptr != self_client->m_websocketMember.m_context)
             {
-                if (self_client->m_retry_interval_ms != 0)
-                {
-                    // d_log("%s : Scheduling reconnect, attempt %d", __func__, self_client->m_retry_count);
-                    lws_sul_schedule(self_client->m_context, 0, &self_client->m_sul, WebSocketClient::connectcb, static_cast<lws_usec_t>(self_client->m_retry_interval_ms) * 1000);
-                    // lws_retry_sul_schedule(self_client->m_context, 0, &self_client->m_sul, &self_client->m_retry_policy, &WebSocketClient::connectcb, &self_client->m_retry_count);
-
-                }
+                retry = true;
             }
             else
             {
@@ -393,9 +379,9 @@ int ocpp1_6::client::WebSocketClient::eventcb(struct lws *wsi, enum lws_callback
             {
                 self_client->m_listener->wsClientConnected();
             }
-            if ((false == self_client->m_queue.empty()) && (nullptr != self_client->m_wsi))
+            if ((false == self_client->m_queue.empty()) && (nullptr != self_client->m_websocketMember.m_wsi))
             {
-                lws_callback_on_writable(self_client->m_wsi);
+                lws_callback_on_writable(self_client->m_websocketMember.m_wsi);
             }
         }
         break;
@@ -475,7 +461,7 @@ int ocpp1_6::client::WebSocketClient::eventcb(struct lws *wsi, enum lws_callback
             d_log("WebSocketClient: HTTP connection closed");
             if (self_client->m_retry_interval_ms != 0)
             {
-                lws_sul_schedule(self_client->m_context, 0, &self_client->m_sul, WebSocketClient::connectcb, static_cast<lws_usec_t>(self_client->m_retry_interval_ms) * 1000);
+                retry = true;
             }
         }
         break;
@@ -491,6 +477,7 @@ int ocpp1_6::client::WebSocketClient::eventcb(struct lws *wsi, enum lws_callback
             // 判断是否需要重连
             if (self_client->m_retry_interval_ms != 0)
             {
+                retry = true;
             }
             // 清空消息队列
             SendMsg *msg;
@@ -505,10 +492,16 @@ int ocpp1_6::client::WebSocketClient::eventcb(struct lws *wsi, enum lws_callback
         break;
     }
     default:
-    {
         break;
     }
+
+    if (true == retry)
+    {
+        self_client->m_retry_count++;
+        d_log("%s : reconnect, attempt times: %u", __func__, self_client->m_retry_count);
+        lws_sul_schedule(self_client->m_websocketMember.m_context, 0, &self_client->m_websocketMember.m_sul, WebSocketClient::connectcb, static_cast<lws_usec_t>(self_client->m_retry_interval_ms) * 1000);
     }
+
     return lws_callback_http_dummy(wsi, reason, user, in, len);
 }
 
@@ -557,7 +550,7 @@ bool ocpp1_6::client::WebSocketClient::disConnect(bool clearMsgFlag)
             }
         }
 
-        lws_cancel_service(m_context); /* 通知主线程 */
+        lws_cancel_service(m_websocketMember.m_context); /* 通知主线程 */
 
         if (std::this_thread::get_id() != m_thread->get_id())
         {
@@ -572,10 +565,10 @@ bool ocpp1_6::client::WebSocketClient::disConnect(bool clearMsgFlag)
         m_thread = nullptr;
         m_connected = false;
 
-        if (nullptr != m_context)
+        if (nullptr != m_websocketMember.m_context)
         {
-            lws_context_destroy(m_context);
-            m_context = nullptr;
+            lws_context_destroy(m_websocketMember.m_context);
+            m_websocketMember.m_context = nullptr;
         }
         ret = true;
     }
@@ -602,9 +595,9 @@ bool ocpp1_6::client::WebSocketClient::send(const void *data, uint64_t size)
         return false;
     }
 
-    if ((true == m_connected) && (nullptr != m_wsi))
+    if ((true == m_connected) && (nullptr != m_websocketMember.m_wsi))
     {
-        lws_callback_on_writable(m_wsi);
+        lws_callback_on_writable(m_websocketMember.m_wsi);
     }
     return true;
 }
