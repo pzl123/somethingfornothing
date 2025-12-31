@@ -51,6 +51,23 @@ int32_t make_dir_recursive(const char *path);
 
 int32_t core_dump_file(bool enable);
 
+
+/**
+ * @brief 当前主机字节序是否是小端模式
+ *
+ * @return bool
+ */
+bool is_little_endian(void);
+
+/**
+ * @brief 转换字节序，可以兼容不同字节长度
+ *
+ * @param src 需要转换数据
+ * @param size 需要转换数据的字节数
+ * @param big_endian true：大端模式；false: 小端模式
+ */
+void convert_byte_order(void *src, size_t size, bool big_endian);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

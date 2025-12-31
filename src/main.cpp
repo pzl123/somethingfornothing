@@ -28,30 +28,10 @@
 
 #include "utils/file_utils.h"
 
-static void my_log_emit(int level, const char *line)
-{
-    if (level == LLL_ERR)
-    {
-        e_log("LWS ERROR: %s", line);
-    }
-    else if (level == LLL_WARN)
-    {
-        w_log("LWS WARN: %s", line);
-    }
-    else if (level == LLL_NOTICE)
-    {
-        i_log("LWS NOTIC: %s", line);
-    }
-    else
-    {
-        d_log("LWS INFO OR DEBUG: %s", line);
-    }
-}
-
 int main(void)
 {
-    core_dump_file(true);
-    lws_set_log_level(LLL_ERR | LLL_WARN | LLL_NOTICE, my_log_emit); /* 设置websocket全局日志信息 */
-    web_socket_client_test();
+    // core_dump_file(true);
+    // web_socket_client_test();
+    can_test();
     return 0;
 }

@@ -217,3 +217,46 @@ int32_t core_dump_file(bool enable)
 
     return 0;
 }
+
+bool is_little_endian(void)
+{
+    union
+    {
+        uint16_t i;
+        uint8_t c;
+    } u;
+    u.i = 0x01;
+    /*
+    数据高位 --> 低位
+    0x 00 01
+
+    低地址 --> 高地址
+    小端模式
+    0x 01 00
+    大端模式
+    0x 00 01
+     */
+    return u.c == 0x01;
+}
+
+void convert_byte_order(void *src, size_t size, bool big_endian)
+{
+    if ((NULL == src) || (0 == size) )
+    {
+        return;
+    }
+
+    /* 主机字节序与转换字节序相同不需要进行转换 */
+    if (!is_little_endian() && big_endian)
+    {
+        return;
+    }
+
+    uint8_t *tmp = (uint8_t*)src;
+    for (size_t i = 0U; i < size / 2; i++)
+    {
+        uint8_t c = tmp[i];
+        tmp[i] = tmp[size - 1 - i];
+        tmp[size - 1 - i] = c;
+    }
+}

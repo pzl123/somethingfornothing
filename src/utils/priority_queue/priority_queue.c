@@ -250,3 +250,28 @@ bool pq_empty(pq_t *pq)
     }
     return pq->size == 0;
 }
+
+bool priority_queue_clear(pq_t *pq, void (*free_callback)(void*))
+{
+    if (NULL == pq)
+    {
+        e_log("Invalid queue pointer");
+        return false;
+    }
+
+    pthread_mutex_lock(&pq->mutex);
+    if (free_callback != NULL)
+    {
+        for (int i = 0; i < pq->size; i++)
+        {
+            if (pq->elements[i]._value != NULL)
+            {
+                free_callback(pq->elements[i]._value);
+                pq->elements[i]._value = NULL;
+            }
+        }
+    }
+    pq->size = 0;
+    pthread_mutex_unlock(&pq->mutex);
+    return true;
+}

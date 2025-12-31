@@ -36,8 +36,12 @@ bool priority_queue_push(pq_t *pq, pv_t item);
 pv_t pq_top(pq_t *pq);
 bool pq_empty(pq_t *pq);
 bool pq_full(pq_t *pq);
+/* 队列为空，等待任务入队后弹出，阻塞式弹出 */
 bool priority_queue_pop(pq_t *pq, pv_t *item);
+/* 非阻塞弹出 */
 bool priority_queue_try_pop(pq_t *pq, pv_t *item);
+/* 清空队列，并可选地释放每个元素的值 */
+bool priority_queue_clear(pq_t *pq, void (*free_callback)(void*));
 
 
 
