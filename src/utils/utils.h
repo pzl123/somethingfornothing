@@ -12,6 +12,15 @@ extern "C" {
 
 #define LOG_PATH "/home/zlgmcu/project/learnC++/log/log"
 #define FILE_PATH_MAX_LEN 128 /* 文件路径最大缓冲长度 */
+#define SYS_CMD_MAX_LEN 128
+
+typedef enum
+{
+    PCU_ERR_INVAL = -2,  /* 入参错误 */
+    PCU_ERR = -1,        /* 通用错误 */
+    PCU_ERR_SUCCESS = 0, /* 成功 */
+} pcu_err_code_e;
+
 
 #define d_log(fmt, ...) \
     errif_debug("DEBUG", __LINE__, __FILE__, pthread_self(), fmt, ##__VA_ARGS__)
@@ -31,8 +40,33 @@ void log_init(void);
 
 uint64_t gettime_msec(void);
 
-
+/**
+ * @brief 递归创建目录
+ *
+ * @param path 目录路径
+ * @return int32_t
+ */
 int32_t make_dir_recursive(const char *path);
+
+
+int32_t core_dump_file(bool enable);
+
+
+/**
+ * @brief 当前主机字节序是否是小端模式
+ *
+ * @return bool
+ */
+bool is_little_endian(void);
+
+/**
+ * @brief 转换字节序，可以兼容不同字节长度
+ *
+ * @param src 需要转换数据
+ * @param size 需要转换数据的字节数
+ * @param big_endian true：大端模式；false: 小端模式
+ */
+void convert_byte_order(void *src, size_t size, bool big_endian);
 
 #ifdef __cplusplus
 }

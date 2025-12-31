@@ -14,7 +14,7 @@
     # 开启 asan
     cmake -DCMAKE_TOOLCHAIN_FILE=../platform/x86_64.cmake -DBUILD_ASAN=ON ..
     # LOG_STDOUT 输出到TTL, -LOG_LEVEL=0-3 :DEBUG INFO WARN ERROR DEFAULT
-    cmake -DCMAKE_TOOLCHAIN_FILE=../platform/x86_64.cmake -DLOG_STDOUT=ON -LOG_LEVEL=4 ..
+    cmake -DCMAKE_TOOLCHAIN_FILE=../platform/x86_64.cmake -DLOG_STDOUT=ON -DLOG_LEVEL=4 ..
 ```
 
 # Start lighttpd

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <map>
 #include <queue>
+#include <unistd.h>
 
 #include "utils/cache/lru.h"
 #include "database/init.h"
@@ -15,6 +16,8 @@
 #include "can/can.h"
 #include "peventloop/monotonic.h"
 #include "utils/timer.h"
+#include "ocpp/client/websocketclient/websock_client.h"
+#include "ocpp/config/configManager.h"
 
 #include "mode/singleton.h"
 #include "mode/composite.h"
@@ -23,15 +26,12 @@
 #include "tcp/ccu.h"
 #include "config/config_cmp_key.h"
 
+#include "utils/file_utils.h"
+
 int main(void)
 {
-    // pthread_t tid;
-    // (void)pthread_create(&tid, NULL, &ccu_server_start_internal, NULL);
-    // (void)pthread_detach(tid);
-    // while (1)
-    // {
-    //     sleep(1);
-    // }
-    test_config_cmp_key();
+    // core_dump_file(true);
+    // web_socket_client_test();
+    can_test();
     return 0;
 }

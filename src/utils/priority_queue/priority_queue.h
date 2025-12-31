@@ -12,8 +12,9 @@ extern "C" {
 
 typedef struct
 {
-    int _priority; /* 优先级 */
+    int32_t _priority; /* 原始优先级 */
     void *_value; /* 存储的值 */
+    uint64_t timestamp; /* 入队时间 */
 } pv_t;
 
 typedef struct
@@ -30,11 +31,17 @@ pq_t *pq_init(int32_t capacity, int32_t (*compare)(pv_t* A, pv_t *b));
 bool pq_delete(pq_t *pq);
 int32_t max_heap_compare(pv_t *a, pv_t *b);
 int32_t min_heap_compare(pv_t *a, pv_t *b);
+int32_t aging_compare(pv_t *a, pv_t *b);
 bool priority_queue_push(pq_t *pq, pv_t item);
 pv_t pq_top(pq_t *pq);
 bool pq_empty(pq_t *pq);
 bool pq_full(pq_t *pq);
+/* 队列为空，等待任务入队后弹出，阻塞式弹出 */
 bool priority_queue_pop(pq_t *pq, pv_t *item);
+/* 非阻塞弹出 */
+bool priority_queue_try_pop(pq_t *pq, pv_t *item);
+/* 清空队列，并可选地释放每个元素的值 */
+bool priority_queue_clear(pq_t *pq, void (*free_callback)(void*));
 
 
 
