@@ -73,7 +73,25 @@ int32_t web_socket_client_test(void)
     return 0;
 }
 
-
+static void my_log_emit(int level, const char *line)
+{
+    if (level == LLL_ERR)
+    {
+        e_log("LWS ERROR: %s", line);
+    }
+    else if (level == LLL_WARN)
+    {
+        w_log("LWS WARN: %s", line);
+    }
+    else if (level == LLL_NOTICE)
+    {
+        i_log("LWS NOTIC: %s", line);
+    }
+    else
+    {
+        d_log("LWS INFO OR DEBUG: %s", line);
+    }
+}
 
 ocpp1_6::client::WebSocketClient::WebSocketClient()
     : m_websocketMember(),
@@ -93,6 +111,7 @@ ocpp1_6::client::WebSocketClient::WebSocketClient()
       m_fragmented_frame_index(0)
 {
     // d_log("websocketclient() client");
+    lws_set_log_level(LLL_ERR | LLL_WARN | LLL_NOTICE, my_log_emit); /* 设置websocket全局日志信息 */
     m_websocketMember.m_self = this;
 }
 
