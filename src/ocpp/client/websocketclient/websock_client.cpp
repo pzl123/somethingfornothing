@@ -49,7 +49,7 @@ int32_t web_socket_client_test(void)
     // std::string url = "ws://192.168.18.128:8080/steve/websocket/CentralSystemService/ChargeBox1";
     std::string url = "ws://172.30.1.55:8080/steve/websocket/CentralSystemService/ChargeBox1";
     std::string protocol = "ocpp1.6";
-    ocpp1_6::auth::Credentials credentials;
+    ocpp1_6::client::Credentials credentials;
     credentials.user = "ChargeBox1";
     credentials.password = "1234";
     std::chrono::milliseconds connect_timeout{3000};
@@ -124,7 +124,7 @@ ocpp1_6::client::WebSocketClient::~WebSocketClient()
 
 bool ocpp1_6::client::WebSocketClient::Connect(const std::string &url,
                                                const std::string &protocol,
-                                               const auth::Credentials &credentials,
+                                               const Credentials &credentials,
                                                std::chrono::milliseconds connect_timeout,
                                                std::chrono::milliseconds retry_interval,
                                                std::chrono::milliseconds ping_interval)
@@ -452,15 +452,14 @@ int ocpp1_6::client::WebSocketClient::eventcb(struct lws *wsi, enum lws_callback
             while (self_client->m_queue.pop(msg, 0) && (nullptr != msg))
             {
                 // 注意：payload 已包含 LWS_PRE 偏移
-                int sent = lws_write(wsi, msg->payload, msg->size, LWS_WRITE_BINARY);
-                delete[] msg->data; // data 是 new unsigned char[LWS_PRE + size]
+                int sent = lws_write(wsi, msg->payload, msg->size, LWS_WRITE_BINARY); /* ocpp 最后发送到网络上的地方 */
                 delete msg;
-
-                if (sent < 0 || (size_t)sent != msg->size)
+                if (sent < 0)
                 {
                     e_log("lws_write failed: %d", sent);
                     return -1;
                 }
+
 
                 if (false == self_client->m_queue.empty())
                 {

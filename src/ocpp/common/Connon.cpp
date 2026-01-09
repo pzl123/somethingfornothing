@@ -50,204 +50,104 @@ namespace ocpp1_6
             return false;
         }
 
-        int msgType = arr[0].GetInt();
-        if (msgType < 2 || msgType > 4)
+        type = static_cast<MessageType>(arr[0].GetInt());
+        if (type < MessageType::Call || MessageType::CallError < type)
         {
             d_log("Invalid message type: Must be 2 (Call), 3 (CallResult), or 4 (CallError).");
             return false;
         }
 
-        type = static_cast<MessageType>(msgType);
-
-        // Step 4: 根据消息类型校验结构
-        switch (type)
+        // -----------------------------
+        if (type == MessageType::Call)
         {
-        case MessageType::Call:
-        {
-            if (arr.Size() != 4)
+            if (document.Size() != 4)
             {
-                d_log("Invalid Call message: Must have exactly 4 elements.");
+                e_log("Call message size=%u, expected 4", document.Size());
                 return false;
             }
-            if (!arr[1].IsString() || !arr[2].IsString() || !arr[3].IsObject())
+
+            if (!document[1].IsString())
             {
-                d_log("Invalid Call message: Expected [2, uniqueId(string), action(string), payload(object)]");
+                e_log("Call[1] uniqueId must be string");
                 return false;
             }
-            break;
-        }
-
-        case MessageType::CallResult:
-        {
-            if (arr.Size() != 3)
+            if (!document[2].IsString())
             {
-                d_log("Invalid CallResult message: Must have exactly 3 elements.");
+                e_log("Call[2] action must be string");
                 return false;
             }
-            if (!arr[1].IsString() || !arr[2].IsObject())
+            if (!document[3].IsObject())
             {
-                d_log("Invalid CallResult message: Expected [3, uniqueId(string), payload(object)]");
+                e_log("Call[3] payload must be JSON object");
                 return false;
             }
-            break;
-        }
 
-        case MessageType::CallError:
-        {
-            if (arr.Size() != 5)
-            {
-                d_log("Invalid CallError message: Must have exactly 5 elements.");
-                return false;
-            }
-            if (!arr[1].IsString() || !arr[2].IsString() ||
-                !arr[3].IsString() || !arr[4].IsObject())
-            {
-                d_log("Invalid CallError message: Expected [4, uniqueId(string), errorCode(string), errorDescription(string), errorDetails(object)]");
-                return false;
-            }
-            break;
-        }
-
-        default:
-            d_log("Unexpected message type (should not happen).");
-            return false;
-        }
-
-        // Step 5: 将解析结果移动到输出参数 document
-        // 注意：RapidJSON Document 不支持直接赋值，需 Swap 或 Parse 再传引用
-        // 这里我们假设调用方传入的 document 是空的，可以直接 swap
-        if (document.GetType() != rapidjson::kNullType)
-        {
-            document.SetNull(); // 清空目标 document
-        }
-        document.Swap(doc); // 高效转移所有权
-
-        return true;
-    }
-
-    bool ocppisInt(const std::string& strVal)
-    {
-        return std::all_of(strVal.begin(), strVal.end(), ::isdigit);
-    }
-
-    bool ocppisUint(const std::string &strVal)
-    {
-        size_t pos;
-        try
-        {
-            unsigned long num = std::stoul(strVal, &pos);
-            if (pos != strVal.size())
-            {
-                return false; // 存在非法后缀字符
-            }
-            if (num > UINT_MAX)
-            {
-                return false; // 超出 uint 范围
-            }
             return true;
         }
-        catch (const std::invalid_argument &)
+
+        // -----------------------------
+        // Check CallResult message
+        // -----------------------------
+        if (type == MessageType::CallResult)
         {
-            e_log("error invalid_argument");
-            return false; // 非数字字符串
-        }
-        catch (const std::out_of_range &)
-        {
-            e_log("error out_of_range");
-            return false; // 数值过大
-        }
-    }
+            if (document.Size() != 3)
+            {
+                e_log("CallResult size=%u, expected 3", document.Size());
+                return false;
+            }
 
-     bool ocppisBool(const std::string& strVal)
-    {
-        return strVal == "true" || strVal == "false";
-    }
+            if (!document[1].IsString())
+            {
+                e_log("CallResult[1] uniqueId must be string");
+                return false;
+            }
+            if (!document[2].IsObject())
+            {
+                e_log("CallResult[2] payload must be JSON object");
+                return false;
+            }
 
-    bool ocppstringToBool(const std::string& strVal)
-    {
-        return strVal == "true";
-    }
-
-    bool keyValueIsInt(const std::string &key)
-    {
-        static const std::unordered_set<std::string> intKeys =
-        {
-            ocpp1_6::config::ClockAlignedDataInterval,
-            ocpp1_6::config::GetConfigurationMaxKeys,
-            ocpp1_6::config::HeartbeatInterval,
-            ocpp1_6::config::LocalAuthListMaxLength,
-            ocpp1_6::config::MeterValueSampleInterval,
-            ocpp1_6::config::MeterValuesAlignedDataMaxLength,
-            ocpp1_6::config::MeterValuesSampledDataMaxLength,
-            ocpp1_6::config::NumberOfConnectors,
-            ocpp1_6::config::ResetRetries,
-            ocpp1_6::config::SendLocalListMaxLength,
-            ocpp1_6::config::StopTxnAlignedDataMaxLength,
-            ocpp1_6::config::StopTxnSampledDataMaxLength,
-            ocpp1_6::config::SupportedFeatureProfilesMaxLength,
-            ocpp1_6::config::TransactionMessageAttempts,
-            ocpp1_6::config::TransactionMessageRetryInterval,
-            ocpp1_6::config::WebSocketPingInterval,
-            ocpp1_6::config::ConnectionTimeOut
-        };
-        return intKeys.find(key) != intKeys.end();
-    }
-
-     bool keyValueIsBool(const std::string& key)
-    {
-        static const std::unordered_set<std::string> boolKeys =
-        {
-            ocpp1_6::config::AllowOfflineTxForUnknownId,
-            ocpp1_6::config::AuthorizationCacheEnabled,
-            ocpp1_6::config::AuthorizeRemoteTxRequests,
-            ocpp1_6::config::LocalAuthListEnabled,
-            ocpp1_6::config::LocalAuthorizeOffline,
-            ocpp1_6::config::LocalPreAuthorize,
-            ocpp1_6::config::ReserveConnectorZeroSupported,
-            ocpp1_6::config::StopTransactionOnEVSideDisconnect,
-            ocpp1_6::config::StopTransactionOnInvalidId
-        };
-        return boolKeys.find(key) != boolKeys.end();
-    }
-
-    bool keyValueIsString(const std::string &key)
-    {
-        static const std::unordered_set<std::string> stringKeys =
-        {
-            ocpp1_6::config::ConnectorPhaseRotation,
-            ocpp1_6::config::MeterValuesAlignedData,
-            ocpp1_6::config::MeterValuesSampledData,
-            ocpp1_6::config::StopTxnAlignedData,
-            ocpp1_6::config::StopTxnSampledData,
-            ocpp1_6::config::SupportedFeatureProfiles
-        };
-
-        return stringKeys.find(key) != stringKeys.end();
-    }
-
-    bool jsonSerialize(const std::string& jsonStr, rapidjson::Document &json)
-    {
-        json.Parse(jsonStr.c_str());
-        if (true == json.HasParseError())
-        {
-            e_log("error parse json:%s", jsonStr);
-            return false;
-        }
-        return true;
-    }
-
-    bool jsonDeserialize(const rapidjson::Document &json, std::string &str)
-    {
-        if ((false == json.IsObject()) && (false == json.IsArray()))
-        {
-            e_log("json not object or array");
-            return false;
+            return true;
         }
 
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        json.Accept(writer);
-        str = buffer.GetString();
+        // -----------------------------
+        // Check CallError message
+        // -----------------------------
+        if (type == MessageType::CallError)
+        {
+            if (document.Size() != 5)
+            {
+                e_log("CallError size=%u, expected 5", document.Size());
+                return false;
+            }
+
+            if (!document[1].IsString())
+            {
+                e_log("CallError[1] uniqueId must be string");
+                return false;
+            }
+            if (!document[2].IsString())
+            {
+                e_log("CallError[2] errorCode must be string");
+                return false;
+            }
+            if (!document[3].IsString())
+            {
+                e_log("CallError[3] errorDescription must be string");
+                return false;
+            }
+            if (!document[4].IsObject())
+            {
+                e_log("CallError[4] errorDetails must be JSON object");
+                return false;
+            }
+
+            return true;
+        }
+
+        // Should never reach
+        e_log("Unknown messageType=%d", type);
+        return false;
     }
 
     std::string generateMessageId()

@@ -25,9 +25,8 @@ LWS 触发 eventcb
  */
 
 #include "websocket/libwebsockets.h"
-#include "ocpp/interface/credentials.h"
+#include "credentials.h"
 #include "ocpp/tool/url/Url.h"
-#include "ocpp/interface/credentials.h"
 #include "ocpp/common/Queue.h"
 
 #include <stdint.h>
@@ -39,6 +38,28 @@ namespace ocpp1_6
 {
     namespace client
     {
+        struct Credentials
+        {
+            std::string user;
+            std::string password;
+
+            std::string tls12_cipher_list;
+            std::string tls13_cipher_list;
+            bool encoded_pem_certificates = false;
+
+            std::string server_certificate_ca;
+            std::string client_certificate;
+            std::string client_certificate_private_key;
+            std::string client_certificate_private_key_passphrase;
+
+            bool allow_selfsigned_certificates = false;
+            bool allow_expired_certificates = false;
+            bool accept_untrusted_certificates = false;
+            bool skip_server_name_check = false;
+
+            std::string server_name;
+        };
+
         class WebSocketClient;
         struct websocketMember
         {
@@ -57,7 +78,7 @@ namespace ocpp1_6
 
             bool Connect(const std::string& url,
                          const std::string& protocol,
-                         const auth::Credentials& credentials,
+                         const Credentials& credentials,
                          std::chrono::milliseconds connect_timeout,
                          std::chrono::milliseconds retry_interval = std::chrono::milliseconds(5000),
                          std::chrono::milliseconds ping_interval = std::chrono::milliseconds(5000));
@@ -75,6 +96,8 @@ namespace ocpp1_6
                 virtual void wsClientFailed() = 0;
                 virtual void wsClientDisconnected() = 0;
                 virtual void wsClientError() = 0;
+
+                /* ws收到消息, 用户在此实现自己的解释逻辑 */
                 virtual void wsClientDataReceived(const void *data, uint64_t size) = 0;
             };
             void registerListener(IListener *listener);
@@ -87,10 +110,11 @@ namespace ocpp1_6
                 unsigned char *payload;
                 SendMsg(const void *_data, uint64_t _size):size(_size)
                 {
-                    data = new unsigned char[LWS_PRE + _size];
-                    (void)memcpy(&data[LWS_PRE], _data, _size);
-                    payload = &data[LWS_PRE];
+                    data = new unsigned char[LWS_PRE + _size]; // 分配总内存
+                    (void)memcpy(&data[LWS_PRE], _data, _size);  // 复制用户数据
+                    payload = &data[LWS_PRE]; // payload 指向用户数据区
                 }
+                ~SendMsg() { delete[] data; }
             };
 
             struct websocketMember m_websocketMember;
@@ -106,12 +130,12 @@ namespace ocpp1_6
             Url m_url;
 
             std::string m_protocol; /* web实例使用的协议 由外部调用者传入 */
-            auth::Credentials m_credentials;
+            Credentials m_credentials;
             static const struct lws_protocols m_protocols[]; /* 静态成员变量 websocket协议数组 具体协议的实现方式 */
             uint16_t m_retry_count;
 
             bool m_connected;
-            ocpp::common::Queue<SendMsg*> m_queue;
+            ocpp1_6::common::Queue<SendMsg*> m_queue;
 
             uint8_t* m_fragmented_frame;
             size_t m_fragmented_frame_size;

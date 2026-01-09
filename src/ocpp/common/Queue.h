@@ -8,7 +8,7 @@
 #include <atomic>
 
 
-namespace ocpp
+namespace ocpp1_6
 {
     namespace common
     {
