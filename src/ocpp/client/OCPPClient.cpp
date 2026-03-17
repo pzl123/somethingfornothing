@@ -456,6 +456,8 @@ namespace ocpp1_6
             {
                 i_log("OCPPClientListener has been set.");
                 m_listener = listener;
+                /* 由于 m_listener 指向的是 ChargePoint 对象（虽然是 IOCPPClientListener* 类型），
+                   虚函数机制会动态绑定到 ChargePoint 的实现。 */
             }
         }
 
@@ -465,7 +467,7 @@ namespace ocpp1_6
             m_isConnected = true;
             if (m_listener)
             {
-                m_listener->onConnected();
+                m_listener->onConnected(); /* 通知到chargepoint */
             }
         }
 

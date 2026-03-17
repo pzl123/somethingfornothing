@@ -31,7 +31,7 @@
 int main(void)
 {
     // core_dump_file(true);
-    // web_socket_client_test();
+    web_socket_client_test();
     // can_test();
 
     return 0;

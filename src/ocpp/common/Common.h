@@ -13,13 +13,6 @@
 #include "nlohmann/json.hpp"
 
 
-#define RESERVATION "Reservation"
-#define METERVALUES "MeterValues"
-#define HEARTBEAT "Heartbeat"
-#define BOOTNOTIFICATION "BootNotification"
-#define STATUSNOTIFICATION "StatusNotification"
-
-
 namespace ocpp1_6
 {
     enum class MessageType

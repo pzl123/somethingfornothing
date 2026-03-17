@@ -12,13 +12,13 @@ namespace ocpp1_6
             Database &db, ITimerPool &timerPool, ThreadPool &threadPool, unsigned int connectorCount, state::StatusNotification &notifier)
             : m_db(db), m_timerPool(timerPool), m_threadPool(threadPool), m_notifier(notifier)
         {
-            m_connectors.reserve(connectorCount + 1);
+            m_connectors.reserve(connectorCount + 1); /* 预约枪数量 */
 
             // 0：代表充电桩本身 1-N：对应枪编号
             for (unsigned int i = 0; i <= connectorCount; i++)
             {
                 Connector c(i);
-                m_connectors.emplace_back(c);
+                m_connectors.emplace_back(c); /* 添加枪 */
             }
         }
 

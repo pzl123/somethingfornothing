@@ -12,7 +12,7 @@
 #include "ocpp/type/OcppStatus.h"
 #include "ocpp/common/Time.h"
 #include "ocpp/tool/timer/ITimerPool.h"
-#include "ocpp/tool/database/database.h"
+#include "ocpp/tool/database/DataBase.h"
 #include "ocpp/config/ConfigManager.h"
 #include "ocpp/action/status/StatusNotification.h"
 

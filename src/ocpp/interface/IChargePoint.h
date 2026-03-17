@@ -15,7 +15,7 @@ namespace ocpp1_6
   namespace chargepoint
   {
 
-    // 调用者直接使用
+    // 调用者直接使用：充电桩对外功能接口
     class IChargePoint
     {
     public:

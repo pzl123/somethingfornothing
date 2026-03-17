@@ -35,6 +35,7 @@ namespace ocpp1_6
         class IOCPPClient
         {
         public:
+            // OCPP 客户端事件监听器
             class IOCPPClientListener
             {
             public:
@@ -62,8 +63,6 @@ namespace ocpp1_6
 
             // 注册CP Call消息响应的处理函数
             virtual void registerCallHandler(const std::string& action, std::function<void(rapidjson::Document&)> handler) = 0;
-
-            virtual void registerCallResultHandler(const std::string &action, std::function<void(rapidjson::Document &)> handler) = 0;
 
             // 设置连接过程状态变化的监听器
             virtual void setOCPPClientListener(IOCPPClientListener *listener) = 0;
