@@ -82,7 +82,7 @@ check_file() {
 # 主流程
 ################################################################################
 
-print_header "OCPP 2.0.1 固件安全签名与验证全流程演示"
+print_header "OCPP 固件安全签名与验证全流程演示"
 
 # 清理旧环境
 print_step "清理旧环境..."
@@ -230,6 +230,7 @@ print_step "下载固件..."
 print_ocpp_msg "CP → CSMS: SignedFirmwareStatusNotification.req (Downloaded)"
 print_ocpp_msg "CSMS → CP :  SignedFirmwareStatusNotification.conf()"
 cp ../$CENTREAL_SYSTEM/$FIRMWARE_FILE ./
+sleep 1
 print_success "固件下载完成 ($(ls -lh $FIRMWARE_FILE | awk '{print $5}'))"
 
 print_step "Verify signature"
@@ -260,9 +261,9 @@ print_ocpp_msg "CP → CSMS: SignedFirmwareStatusNotification.req(status = Signa
 print_ocpp_msg "CSMS → CP: SignedFirmwareStatusNotification.conf()"
 
 ################################################################################
-# 第五阶段：安装流程模拟
+# 第三阶段：安装流程模拟
 ################################################################################
-print_header "第五阶段：固件安装流程"
+print_header "第三阶段：固件安装流程"
 
 print_step "等待事务完成..."
 sleep 1
@@ -285,47 +286,3 @@ sleep 1
 print_ocpp_msg "CP → CSMS: SignedFirmwareStatusNotification.req(status = Installed, requestId = $REQUEST_ID)"
 print_ocpp_msg "CSMS → CP: SignedFirmwareStatusNotification.conf()"
 print_success "固件安装完成"
-
-# ################################################################################
-# # 第六阶段：安全测试 - 模拟篡改
-# ################################################################################
-# print_header "第六阶段：安全测试 - 模拟固件篡改"
-
-# print_step "创建篡改的固件副本..."
-# cp $FIRMWARE_FILE ${FIRMWARE_FILE}.tampered
-# echo "HACKED_BY_ATTACKER_$(date +%s)" >> ${FIRMWARE_FILE}.tampered
-# print_info "已修改固件内容"
-
-# print_step "验证篡改后的固件..."
-# if openssl dgst -SHA256 -verify extracted_pubkey.pem -signature firmware.sig.B ${FIRMWARE_FILE}.tampered >/dev/null 2>&1; then
-#     print_error "⚠️  警告：篡改未被检测到！"
-# else
-#     print_success "安全机制生效：检测到固件被篡改"
-#     print_ocpp_msg "CP → CSMS: FirmwareStatusNotification (InstallFailed)"
-# fi
-
-# rm -f ${FIRMWARE_FILE}.tampered
-# print_info "已清理篡改测试文件"
-
-# ################################################################################
-# # 完成
-# ################################################################################
-# cd ..
-
-# print_header "演示完成"
-
-# echo -e "\n${YELLOW}--- 最终目录结构 ---${NC}"
-# echo -e "\n${BLUE}manufacturer/ ${CYAN}(工厂端 - 包含私钥，需严格保护)${NC}"
-# ls -1 manufacturer/ | sed 's/^/    /'
-
-# echo -e "\n${BLUE}charge-point/ ${CYAN}(充电桩端 - 只有公钥和固件)${NC}"
-# ls -1 charge-point/ | sed 's/^/    /'
-
-# echo -e "\n${YELLOW}--- 安全要点总结 ---${NC}"
-# echo -e "${CYAN}  1. 根私钥 (manufacturer_root.key) 必须离线存储${NC}"
-# echo -e "${CYAN}  2. 签名私钥 (firmware_signing.key) 建议存储在 HSM 中${NC}"
-# echo -e "${CYAN}  3. 充电桩只存储根证书公钥，不存储任何私钥${NC}"
-# echo -e "${CYAN}  4. 每次固件更新都需要重新签名${NC}"
-# echo -e "${CYAN}  5. 证书有效期建议：根证书 10 年，签名证书 1-3 年${NC}"
-
-# echo -e "\n${GREEN}✅ 所有测试完成！${NC}"
