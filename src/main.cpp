@@ -17,7 +17,7 @@
 #include "peventloop/monotonic.h"
 #include "utils/timer.h"
 #include "ocpp/client/websocketclient/websock_client.h"
-#include "ocpp/config/configManager.h"
+#include "ocpp/config/ConfigManager.h"
 
 #include "mode/singleton.h"
 #include "mode/composite.h"
@@ -31,7 +31,8 @@
 int main(void)
 {
     // core_dump_file(true);
-    // web_socket_client_test();
-    can_test();
+    web_socket_client_test();
+    // can_test();
+
     return 0;
 }

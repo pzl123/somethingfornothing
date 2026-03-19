@@ -1,12 +1,12 @@
-#ifndef OPENOCPP_ICHARGEPOINT_H
-#define OPENOCPP_ICHARGEPOINT_H
+#ifndef ICHARGEPOINT_H
+#define ICHARGEPOINT_H
 
-
-#include "ocpp/interface/credentials.h"
+#include "credentials.h"
 #include "ocpp/interface/IChargePointHandler.h"
-#include "ocpp/interface/type/OcppStatus.h"
-#include "ocpp/interface/type/ChargePointErrorCode.h"
-#include "ocpp/interface/type/Reason.h"
+#include "ocpp/type/ChargePointErrorCode.h"
+#include "ocpp/type/OcppStatus.h"
+#include "ocpp/type/Reason.h"
+
 #include <memory>
 
 namespace ocpp1_6
@@ -15,7 +15,7 @@ namespace ocpp1_6
   namespace chargepoint
   {
 
-    // 调用者直接使用
+    // 调用者直接使用：充电桩对外功能接口
     class IChargePoint
     {
     public:
@@ -163,4 +163,4 @@ namespace ocpp1_6
   } // namespace chargepoint
 } // namespace ocpp1_6
 
-#endif // OPENOCPP_ICHARGEPOINT_H
+#endif // ICHARGEPOINT_H

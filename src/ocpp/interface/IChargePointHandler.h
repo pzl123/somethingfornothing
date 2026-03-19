@@ -1,17 +1,8 @@
-/*
- * @Author: hd hedu_0908@163.com
- * @Date: 2024-10-04 15:56:21
- * @LastEditors: hd hedu_0908@163.com
- * @LastEditTime: 2025-2-21 10:43:13
- * @FilePath: /ocpp-develop/src/interface/IChargePointHandler.h
- * @Description: 充电桩事件处理接口
- */
-#ifndef OCPPP_ICHARGEPOINTEVENTSHANDLER_H
-#define OCPPP_ICHARGEPOINTEVENTSHANDLER_H
+#ifndef ICHARGEPOINTEVENTSHANDLER_H
+#define ICHARGEPOINTEVENTSHANDLER_H
 
 #include "rapidjson/document.h"
-
-#include "ocpp/interface/type/OcppStatus.h"
+#include "ocpp/type/OcppStatus.h"
 #include "ocpp/common/Common.h"
 #include <string>
 #include <ctime>
@@ -129,4 +120,4 @@ namespace ocpp1_6
         };
     }
 }
-#endif // OPENOCPP_ICHARGEPOINTEVENTSHANDLER_H
+#endif // ICHARGEPOINTEVENTSHANDLER_H

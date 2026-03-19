@@ -1,10 +1,9 @@
-#ifndef REASON_H
-#define REASON_H
+#ifndef OCPP1_6_REASON_H
+#define OCPP1_6_REASON_H
 
 #include <string>
 namespace ocpp1_6
 {
-
     enum class Reason
     {
         /// @brief DeAuthorized: 交易因授权状态被停止。
@@ -42,4 +41,5 @@ namespace ocpp1_6
     };
 
 } // namespace ocpp1_6
-#endif
+
+#endif /* OCPP1_6_REASON_H */

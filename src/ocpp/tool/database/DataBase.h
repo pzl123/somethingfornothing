@@ -16,48 +16,22 @@ public:
     class Query;
 
     /** @brief 构造函数 */
-    Database() : m_db(nullptr) { }
+    Database();
     /** @brief 析构函数 */
-    virtual ~Database() { close(); }
+    virtual ~Database();
 
     /**
      * @brief 打开数据库
      * @param database_path 数据库文件路径
      * @return 如果数据库存在则返回 true，否则返回 false
      */
-    bool open(const std::string &database_path)
-    {
-        if (nullptr == m_db)
-        {
-            d_log("[SQLite3] path: %s", database_path.c_str());
-            int code = sqlite3_open_v2(database_path.c_str(), &m_db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, nullptr);
-            if (code != SQLITE_OK)
-            {
-                w_log("[SQLite3] code:%d, %s", code, lastError().c_str());
-                return false;
-            }
-        }
-        return true;
-    }
+    bool open(const std::string &database_path);
 
     /**
      * @brief 关闭数据库
      * @return 如果数据库存在则返回 true，否则返回 false
      */
-    bool close()
-    {
-        int rc = sqlite3_close_v2(m_db);
-        if (SQLITE_OK == rc)
-        {
-            m_db = nullptr;
-            return true;
-        }
-        else
-        {
-            d_log("Failed to close DB: %s", std::string(sqlite3_errstr(rc)).c_str());
-            return false;
-        }
-    }
+    bool close();
 
     /**
      * @brief 创建要在数据库上执行的新查询

@@ -5,6 +5,15 @@
 #include <iostream>
 static int lws_http_basic_auth_gen2_ocpp(const char *user, const char *pw, size_t pw_len, char *buf, size_t len);
 
+static const uint32_t m_retry_table[] = { 500, 1000, 2000, 5000, 10000 };
+static const lws_retry_bo_t m_retry_policy = {
+    .retry_ms_table       = m_retry_table, /* 机制：当重试次数超过 retry_ms_table_count（你这里是 5 次）后，libwebsockets 会循环使用数组中的最后一个值（即 10000 毫秒）。如果没有外部干预，你的程序会按照 500ms -> 1s -> 2s -> 5s -> 10s -> 10s -> 10s ... 的节奏永远尝试重连下去。 */
+    .retry_ms_table_count = LWS_ARRAY_SIZE(m_retry_table),
+    .conceal_count        = 10, /* 在前 conceal_count 次 重试过程中，如果连接失败了，libwebsockets 会认为这是“内部正在处理的重连”，不会触发 LWS_CALLBACK_CLIENT_CONNECTION_ERROR 回调告诉你的代码“连接彻底断了”。 */
+    .jitter_percent       = 10 /* 给每次重连加一个抖动时间 */
+};
+
+
 const struct lws_protocols ocpp1_6::client::WebSocketClient::m_protocols[] =
 {
     {"WebSocketClient", &ocpp1_6::client::WebSocketClient::eventcb, sizeof(ocpp1_6::client::WebSocketClient *), 0, 0, nullptr, 0},
@@ -46,10 +55,10 @@ int32_t web_socket_client_test(void)
     TestListener listener;
     client.registerListener(&listener);
     // std::string url = "ws://172.30.1.55:8180/steve/websocket/ChargeBox1";
-    // std::string url = "ws://192.168.18.128:8080/steve/websocket/CentralSystemService/ChargeBox1";
-    std::string url = "ws://172.30.1.55:8080/steve/websocket/CentralSystemService/ChargeBox1";
+    std::string url = "ws://192.168.18.128:8080/steve/websocket/CentralSystemService/ChargeBox1";
+    // std::string url = "ws://172.30.1.55:8080/steve/websocket/CentralSystemService/ChargeBox1";
     std::string protocol = "ocpp1.6";
-    ocpp1_6::auth::Credentials credentials;
+    ocpp1_6::client::Credentials credentials;
     credentials.user = "ChargeBox1";
     credentials.password = "1234";
     std::chrono::milliseconds connect_timeout{3000};
@@ -73,7 +82,25 @@ int32_t web_socket_client_test(void)
     return 0;
 }
 
-
+static void my_log_emit(int level, const char *line)
+{
+    if (level == LLL_ERR)
+    {
+        e_log("LWS ERROR: %s", line);
+    }
+    else if (level == LLL_WARN)
+    {
+        w_log("LWS WARN: %s", line);
+    }
+    else if (level == LLL_NOTICE)
+    {
+        i_log("LWS NOTIC: %s", line);
+    }
+    else
+    {
+        d_log("LWS INFO OR DEBUG: %s", line);
+    }
+}
 
 ocpp1_6::client::WebSocketClient::WebSocketClient()
     : m_websocketMember(),
@@ -93,6 +120,7 @@ ocpp1_6::client::WebSocketClient::WebSocketClient()
       m_fragmented_frame_index(0)
 {
     // d_log("websocketclient() client");
+    lws_set_log_level(LLL_ERR | LLL_WARN | LLL_NOTICE, my_log_emit); /* 设置websocket全局日志信息 */
     m_websocketMember.m_self = this;
 }
 
@@ -105,7 +133,7 @@ ocpp1_6::client::WebSocketClient::~WebSocketClient()
 
 bool ocpp1_6::client::WebSocketClient::Connect(const std::string &url,
                                                const std::string &protocol,
-                                               const auth::Credentials &credentials,
+                                               const Credentials &credentials,
                                                std::chrono::milliseconds connect_timeout,
                                                std::chrono::milliseconds retry_interval,
                                                std::chrono::milliseconds ping_interval)
@@ -272,9 +300,9 @@ void ocpp1_6::client::WebSocketClient::connectcb(struct lws_sorted_usec_list *su
     if (!lws_client_connect_via_info(&i))
     {
         d_log("%s : Scheduling reconnect, attempt times: %u", __func__, self_client->m_retry_count);
-        // lws_retry_sul_schedule(self_client->m_context, 0, sul, &self_client->m_retry_policy, WebSocketClient::connectcb, &self_client->m_retry_count); /* 重连机制 */
-        self_client->m_retry_count++;
-        lws_sul_schedule(self_client->m_websocketMember.m_context, 0, &self_client->m_websocketMember.m_sul, WebSocketClient::connectcb, static_cast<lws_usec_t>(self_client->m_retry_interval_ms) * 1000);
+        // self_client->m_retry_count++;
+        lws_retry_sul_schedule(self_client->m_websocketMember.m_context, 0, sul, &m_retry_policy, WebSocketClient::connectcb, &self_client->m_retry_count); /* 重连机制 */
+        // lws_sul_schedule(self_client->m_websocketMember.m_context, 0, &self_client->m_websocketMember.m_sul, WebSocketClient::connectcb, static_cast<lws_usec_t>(self_client->m_retry_interval_ms) * 1000);
     }
 }
 
@@ -433,15 +461,14 @@ int ocpp1_6::client::WebSocketClient::eventcb(struct lws *wsi, enum lws_callback
             while (self_client->m_queue.pop(msg, 0) && (nullptr != msg))
             {
                 // 注意：payload 已包含 LWS_PRE 偏移
-                int sent = lws_write(wsi, msg->payload, msg->size, LWS_WRITE_BINARY);
-                delete[] msg->data; // data 是 new unsigned char[LWS_PRE + size]
+                int sent = lws_write(wsi, msg->payload, msg->size, LWS_WRITE_BINARY); /* ocpp 最后发送到网络上的地方 */
                 delete msg;
-
-                if (sent < 0 || (size_t)sent != msg->size)
+                if (sent < 0)
                 {
                     e_log("lws_write failed: %d", sent);
                     return -1;
                 }
+
 
                 if (false == self_client->m_queue.empty())
                 {
@@ -497,9 +524,10 @@ int ocpp1_6::client::WebSocketClient::eventcb(struct lws *wsi, enum lws_callback
 
     if (true == retry)
     {
-        self_client->m_retry_count++;
+        // self_client->m_retry_count++;
         d_log("%s : reconnect, attempt times: %u", __func__, self_client->m_retry_count);
-        lws_sul_schedule(self_client->m_websocketMember.m_context, 0, &self_client->m_websocketMember.m_sul, WebSocketClient::connectcb, static_cast<lws_usec_t>(self_client->m_retry_interval_ms) * 1000);
+        // lws_sul_schedule(self_client->m_websocketMember.m_context, 0, &self_client->m_websocketMember.m_sul, WebSocketClient::connectcb, static_cast<lws_usec_t>(self_client->m_retry_interval_ms) * 1000);
+        lws_retry_sul_schedule(self_client->m_websocketMember.m_context, 0, &self_client->m_websocketMember.m_sul, &m_retry_policy, WebSocketClient::connectcb, &self_client->m_retry_count);
     }
 
     return lws_callback_http_dummy(wsi, reason, user, in, len);

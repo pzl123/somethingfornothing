@@ -1,13 +1,6 @@
-/*
- * @Author: hd hedu_0908@163.com
- * @Date: 2024-10-26 10:43:13
- * @LastEditors: hd hedu_0908@163.com
- * @LastEditTime: 2024-12-04 08:34:24
- * @FilePath: /ocpp-develop/src/types/OcppStatus.h
- * @Description: DEYE OCPP 1.6J 充电桩状态枚举文件
- */
 #ifndef OCPPSTATUS_H
 #define OCPPSTATUS_H
+#include <string>
 
 namespace ocpp1_6
 {
@@ -213,5 +206,57 @@ namespace ocpp1_6
         TypeConstraintViolation,       ///< 类型约束违规
         GenericError                   ///< 通用错误
     };
+
+    // --------SampledValue 结构----------
+    // Energy.Active.Import.Register
+    // 车从充电桩吸收的累计有功电能（充入电池的电量，单位kWh），能反映充了多少电。
+    // 充电前后对比能知道充了多少电。
+    typedef struct
+    {
+        std::string value;
+        std::string unit;
+    } EnergyActiveImportRegister;
+
+    // Power.Active.Import
+    // 当前瞬时充电功率（单位kW），能反映充电速度。
+    // 方便监控充电是否正常，是否达到预期功率。
+    typedef struct
+    {
+        std::string value;
+        std::string unit;
+    } PowerActiveImport;
+
+    // Voltage
+    // 当前充电电压（单位V），监控电压是否在正常范围内。
+    typedef struct
+    {
+        std::string value;
+        std::string unit;
+    } Voltage;
+
+    // Current.Import
+    // 当前充电电流（单位A），实时反映充电电流大小。
+    typedef struct
+    {
+        std::string value;
+        std::string unit;
+    } CurrentImport;
+
+    // SoC
+    // 电池当前的荷电状态（百分比），显示电池电量变化，能帮助判断充电进度。
+    typedef struct
+    {
+        std::string value;
+        std::string unit;
+    } SoC;
+
+    typedef struct
+    {
+        EnergyActiveImportRegister energyActiveImportRegister;
+        PowerActiveImport powerActiveImport;
+        Voltage voltage;
+        CurrentImport currentImport;
+        SoC soc;
+    } SampledValue;
 } //  namespace ocpp1_6
 #endif
